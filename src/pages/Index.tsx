@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { getClientSummaries, getAllResponsaveis, getAllStatuses, type StatusGeral } from "@/data/clients";
+import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -16,20 +16,19 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const clients = useMemo(() => getClientSummaries(), []);
-  const responsaveis = useMemo(() => getAllResponsaveis(), []);
+  const { summaries, allResponsaveis, allStatuses } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
 
   const filtered = useMemo(() => {
-    return clients.filter(c => {
+    return summaries.filter(c => {
       if (filterResp && c.responsavel !== filterResp) return false;
       if (filterStatus && c.status !== filterStatus) return false;
       if (filterCliente && !c.cliente.toLowerCase().includes(filterCliente.toLowerCase())) return false;
       return true;
     });
-  }, [clients, filterResp, filterStatus, filterCliente]);
+  }, [summaries, filterResp, filterStatus, filterCliente]);
 
   const totalClientes = filtered.length;
   const entregues = filtered.filter(c => c.status === "Concluído").length;
@@ -37,7 +36,6 @@ export default function Dashboard() {
   const pendentes = filtered.filter(c => c.status !== "Concluído" && c.status !== "Atrasado").length;
   const avgProgress = totalClientes > 0 ? Math.round(filtered.reduce((s, c) => s + c.progresso, 0) / totalClientes) : 0;
 
-  // Charts data
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
     filtered.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
@@ -61,13 +59,11 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Visão geral das entregas e contratos</p>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">
           <input
             type="text"
@@ -76,25 +72,16 @@ export default function Dashboard() {
             onChange={e => setFilterCliente(e.target.value)}
             className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
           />
-          <select
-            value={filterResp}
-            onChange={e => setFilterResp(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="">Todos os responsáveis</option>
-            {responsaveis.map(r => <option key={r} value={r}>{r}</option>)}
+            {allResponsaveis.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="">Todos os status</option>
-            {getAllStatuses().map(s => <option key={s} value={s}>{s}</option>)}
+            {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
-        {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
           <KpiCard title="Entregues" value={entregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={80} />
@@ -103,22 +90,15 @@ export default function Dashboard() {
           <KpiCard title="Progresso Médio" value={`${avgProgress}%`} icon={TrendingUp} color="text-primary" bgColor="bg-primary/10" delay={320} />
         </div>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Status Donut */}
           <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Distribuição de Status</h3>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                  {statusData.map((entry) => (
-                    <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || "#94a3b8"} />
-                  ))}
+                  {statusData.map(entry => <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || "#94a3b8"} />)}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", fontSize: 12 }}
-                  formatter={(value: number, name: string) => [`${value} clientes`, name]}
-                />
+                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", fontSize: 12 }} formatter={(value: number, name: string) => [`${value} clientes`, name]} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-3 mt-2 justify-center">
@@ -131,7 +111,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Responsáveis */}
           <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Clientes por Responsável</h3>
             <ResponsiveContainer width="100%" height={260}>
@@ -145,7 +124,6 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Contratado vs Entregue */}
           <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Contratado vs Entregue</h3>
             <ResponsiveContainer width="100%" height={260}>
@@ -161,19 +139,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Client List */}
         <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border">
             <h3 className="text-sm font-semibold text-card-foreground">Visão Geral dos Clientes</h3>
           </div>
           <div className="divide-y divide-border">
-            {filtered.map((c, i) => (
-              <div
-                key={c.cliente}
-                className={`flex items-center gap-4 px-5 py-4 hover:bg-accent/50 transition-colors ${
-                  c.status === "Atrasado" ? "bg-status-late-bg/30" : ""
-                }`}
-              >
+            {filtered.map(c => (
+              <div key={c.cliente} className={`flex items-center gap-4 px-5 py-4 hover:bg-accent/50 transition-colors ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-card-foreground truncate">{c.cliente}</p>
                   <p className="text-xs text-muted-foreground">{c.responsavel}</p>
@@ -185,9 +157,7 @@ export default function Dashboard() {
               </div>
             ))}
             {filtered.length === 0 && (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Nenhum cliente encontrado com os filtros aplicados.
-              </div>
+              <div className="p-8 text-center text-sm text-muted-foreground">Nenhum cliente encontrado com os filtros aplicados.</div>
             )}
           </div>
         </div>

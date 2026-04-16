@@ -1,4 +1,4 @@
-import type { StatusGeral } from "@/data/clients";
+import type { StatusGeral } from "@/data/DataContext";
 
 const statusConfig: Record<StatusGeral, { label: string; className: string }> = {
   "Concluído": { label: "Entregue", className: "bg-status-delivered-bg text-status-delivered" },
