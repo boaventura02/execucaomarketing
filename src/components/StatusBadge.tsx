@@ -8,10 +8,11 @@ const statusConfig: Record<StatusGeral, { label: string; className: string }> = 
   "Pendente": { label: "Pendente", className: "bg-status-pending-bg text-status-pending" },
 };
 
-export function StatusBadge({ status }: { status: StatusGeral }) {
+export function StatusBadge({ status, size = "md" }: { status: StatusGeral; size?: "sm" | "md" }) {
   const config = statusConfig[status];
+  const sizeCls = size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-0.5 text-xs";
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.className}`}>
+    <span className={`inline-flex items-center rounded-full font-semibold ${sizeCls} ${config.className}`}>
       {config.label}
     </span>
   );
