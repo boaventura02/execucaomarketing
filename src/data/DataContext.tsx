@@ -196,11 +196,54 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   });
 }
 
+const STORAGE_KEY = "deliver-flow-data-v1";
+
+interface PersistedState {
+  rows: ClientRow[];
+  columns: ColumnDef[];
+  nextId: number;
+  nextColId: number;
+}
+
+function loadPersisted(): PersistedState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedState;
+    if (!parsed.rows || !parsed.columns) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [rows, setRows] = useState<ClientRow[]>(() =>
-    initialData.map(d => ({ ...d, id: genId(), custom: {} }))
-  );
-  const [columns, setColumns] = useState<ColumnDef[]>(initialColumns);
+  const persisted = typeof window !== "undefined" ? loadPersisted() : null;
+
+  const [rows, setRows] = useState<ClientRow[]>(() => {
+    if (persisted) {
+      nextId = persisted.nextId;
+      return persisted.rows;
+    }
+    return initialData.map(d => ({ ...d, id: genId(), custom: {} }));
+  });
+  const [columns, setColumns] = useState<ColumnDef[]>(() => {
+    if (persisted) {
+      nextColId = persisted.nextColId;
+      return persisted.columns;
+    }
+    return initialColumns;
+  });
+
+  // Persiste mudanças no localStorage
+  React.useEffect(() => {
+    try {
+      const state: PersistedState = { rows, columns, nextId, nextColId };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Falha ao salvar no localStorage:", e);
+    }
+  }, [rows, columns]);
 
   const updateRow = useCallback((id: string, updates: Partial<ClientRow>) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
