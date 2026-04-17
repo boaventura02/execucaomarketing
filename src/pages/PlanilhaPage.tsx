@@ -200,15 +200,15 @@ export default function PlanilhaPage() {
         </div>
 
         <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[calc(100vh-220px)]">
             <table className="text-sm" style={{ minWidth: "1800px" }}>
-              <thead>
-                <tr className="border-b border-border bg-secondary/50">
-                  <th className="px-2 py-2.5 text-center text-[10px] font-semibold text-muted-foreground uppercase w-10">#</th>
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-border bg-secondary">
+                  <th className="px-2 py-2.5 text-center text-[10px] font-semibold text-muted-foreground uppercase w-10 bg-secondary">#</th>
                   {columns.map(col => (
                     <th
                       key={col.id}
-                      className="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground uppercase tracking-wider"
+                      className="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-secondary"
                       style={{ minWidth: col.width }}
                     >
                       <ColumnHeader
@@ -218,7 +218,7 @@ export default function PlanilhaPage() {
                       />
                     </th>
                   ))}
-                  <th className="px-2 py-2.5 w-10"></th>
+                  <th className="px-2 py-2.5 w-10 bg-secondary"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
