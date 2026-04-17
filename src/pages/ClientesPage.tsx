@@ -1,14 +1,31 @@
 import { useMemo, useState } from "react";
-import { useData } from "@/data/DataContext";
+import { ChevronDown, ChevronRight, Calendar, User, Layers } from "lucide-react";
+import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 
+function formatDate(d: string) {
+  if (!d) return "—";
+  return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
+}
+
+function rowAccent(status: StatusGeral) {
+  if (status === "Atrasado") return "border-l-status-late bg-status-late-bg/20";
+  if (status === "Revisão") return "border-l-status-review bg-status-review-bg/20";
+  if (status === "Em andamento") return "border-l-status-inprogress bg-status-inprogress-bg/20";
+  if (status === "Concluído") return "border-l-status-delivered bg-status-delivered-bg/10";
+  return "border-l-status-pending bg-status-pending-bg/20";
+}
+
 export default function ClientesPage() {
-  const { summaries, allResponsaveis, allStatuses } = useData();
+  const { summaries, allResponsaveis, allStatuses, columns, rows, getCellValue } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const customColumns = useMemo(() => columns.filter(c => c.kind === "custom"), [columns]);
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
@@ -19,12 +36,14 @@ export default function ClientesPage() {
     });
   }, [summaries, filterResp, filterStatus, filterCliente]);
 
+  const toggle = (cliente: string) => setExpanded(p => ({ ...p, [cliente]: !p[cliente] }));
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Detalhamento completo dos contratos e entregas</p>
+          <p className="text-sm text-muted-foreground mt-1">Clique em um cliente para ver o detalhamento de cada item contratado</p>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6">
@@ -39,41 +58,107 @@ export default function ClientesPage() {
           </select>
         </div>
 
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-secondary/50">
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Cliente</th>
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Responsável</th>
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Itens</th>
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground w-48">Progresso</th>
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Vencimento</th>
-                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map(c => (
-                  <tr key={c.cliente} className={`hover:bg-accent/50 transition-colors ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}>
-                    <td className="px-5 py-4">
-                      <p className="font-semibold text-card-foreground">{c.cliente}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {c.items.map((item, i) => (
-                          <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{item.tipo}: {item.quantidade}</span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">{c.responsavel}</td>
-                    <td className="px-5 py-4"><span className="font-semibold text-card-foreground">{c.totalEntregues}</span><span className="text-muted-foreground"> / {c.totalItems}</span></td>
-                    <td className="px-5 py-4"><ProgressBar value={c.progresso} /></td>
-                    <td className="px-5 py-4 text-muted-foreground text-xs">{c.vencimentoContrato ? new Date(c.vencimentoContrato + "T00:00:00").toLocaleDateString("pt-BR") : "—"}</td>
-                    <td className="px-5 py-4"><StatusBadge status={c.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filtered.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>}
-          </div>
+        <div className="space-y-3">
+          {filtered.map(c => {
+            const isOpen = !!expanded[c.cliente];
+            return (
+              <div key={c.cliente} className={`bg-card rounded-xl border border-border shadow-sm overflow-hidden border-l-4 ${rowAccent(c.status)}`}>
+                <button
+                  onClick={() => toggle(c.cliente)}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-accent/40 transition-colors text-left"
+                >
+                  <div className="flex-shrink-0 text-muted-foreground">
+                    {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-card-foreground">{c.cliente}</p>
+                    <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsavel}</span>
+                      <span className="flex items-center gap-1"><Layers className="w-3 h-3" />{c.totalEntregues}/{c.totalItems} itens</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Vence {formatDate(c.vencimentoContrato)}</span>
+                    </div>
+                  </div>
+                  <div className="hidden md:block w-44">
+                    <ProgressBar value={c.progresso} />
+                  </div>
+                  <StatusBadge status={c.status} />
+                </button>
+
+                {isOpen && (
+                  <div className="border-t border-border bg-secondary/30 px-5 py-4">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                      Itens contratados ({c.items.length})
+                    </h4>
+                    <div className="grid gap-2">
+                      {c.items.map(item => {
+                        const fullRow = rows.find(r => r.id === item.rowId);
+                        return (
+                          <div
+                            key={item.rowId}
+                            className={`rounded-lg border border-border bg-card p-3 border-l-4 ${rowAccent(item.statusGeral)}`}
+                          >
+                            <div className="flex items-center justify-between gap-3 flex-wrap">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold">
+                                  {item.tipo || "—"}
+                                </span>
+                                <div className="text-sm">
+                                  <span className="text-muted-foreground">Qtd:</span>{" "}
+                                  <span className="font-medium text-card-foreground">{item.quantidade || "—"}</span>
+                                </div>
+                                {item.statusEntrega && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Entrega: <span className="text-card-foreground">{item.statusEntrega}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <StatusBadge status={item.statusGeral} size="sm" />
+                            </div>
+
+                            {fullRow && (fullRow.dataGravacao || fullRow.dataEntregaPrevista || fullRow.prazoFinal || fullRow.observacoes || customColumns.some(cc => fullRow.custom[cc.id])) && (
+                              <div className="mt-3 pt-3 border-t border-border/60 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs">
+                                {fullRow.dataGravacao && (
+                                  <div><span className="text-muted-foreground">Gravação:</span> <span className="text-card-foreground">{formatDate(fullRow.dataGravacao)}</span></div>
+                                )}
+                                {fullRow.dataEntregaPrevista && (
+                                  <div><span className="text-muted-foreground">Entrega prev.:</span> <span className="text-card-foreground">{formatDate(fullRow.dataEntregaPrevista)}</span></div>
+                                )}
+                                {fullRow.prazoFinal && (
+                                  <div><span className="text-muted-foreground">Prazo:</span> <span className="text-card-foreground">{formatDate(fullRow.prazoFinal)}</span></div>
+                                )}
+                                {fullRow.autorizadoPor && (
+                                  <div><span className="text-muted-foreground">Autorizado:</span> <span className="text-card-foreground">{fullRow.autorizadoPor}</span></div>
+                                )}
+                                {customColumns.map(cc => {
+                                  const v = getCellValue(fullRow, cc);
+                                  if (!v) return null;
+                                  return (
+                                    <div key={cc.id}>
+                                      <span className="text-muted-foreground">{cc.label}:</span>{" "}
+                                      <span className="text-card-foreground">{cc.type === "date" ? formatDate(v) : v}</span>
+                                    </div>
+                                  );
+                                })}
+                                {fullRow.observacoes && (
+                                  <div className="col-span-2 md:col-span-4"><span className="text-muted-foreground">Obs:</span> <span className="text-card-foreground">{fullRow.observacoes}</span></div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {filtered.length === 0 && (
+            <div className="bg-card rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
+              Nenhum cliente encontrado.
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>
