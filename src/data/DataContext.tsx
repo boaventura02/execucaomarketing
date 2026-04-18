@@ -197,7 +197,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   });
 }
 
-const STORAGE_KEY = "execucao-marketing-data-v4";
+const STORAGE_KEY = "execucao-marketing-data-v5";
 
 interface PersistedState {
   rows: ClientRow[];
