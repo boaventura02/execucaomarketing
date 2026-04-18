@@ -42,7 +42,7 @@ export default function ClientesPage() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-white">Clientes</h1>
+          <h1 className="text-3xl font-serif font-bold text-foreground">Clientes</h1>
           <p className="text-sm text-muted-foreground mt-1">Clique em um cliente para ver o detalhamento de cada item contratado</p>
         </div>
 
