@@ -18,7 +18,7 @@ export interface InitialRowData {
   observacoes: string;
 }
 
-export const initialDataRows: InitialRowData[] = [
+export const initialRows: InitialRowData[] = [
   { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
   { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
   { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
