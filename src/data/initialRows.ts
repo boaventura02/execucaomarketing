@@ -1,4 +1,4 @@
-import type { ClientRow, StatusGeral } from "./DataContext";
+import type { ClientRow } from "./DataContext";
 
 export const initialDataRows: Omit<ClientRow, "id" | "custom">[] = [
   { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
