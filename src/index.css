@@ -6,58 +6,58 @@
 
 @layer base {
   :root {
-    /* Tema escuro monocromático: preto, branco, cinza */
-    --background: 0 0% 7%;            /* quase preto */
-    --foreground: 0 0% 96%;           /* branco suave */
+    /* Tema claro elegante e limpo */
+    --background: 0 0% 100%;           /* branco */
+    --foreground: 0 0% 10%;            /* quase preto */
 
-    --card: 0 0% 11%;                 /* cinza muito escuro */
-    --card-foreground: 0 0% 96%;
+    --card: 0 0% 98%;                  /* branco levemente cinza */
+    --card-foreground: 0 0% 10%;
 
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 0 0% 96%;              /* branco como destaque */
-    --primary-foreground: 0 0% 8%;    /* preto sobre branco */
+    --primary: 0 0% 0%;                /* preto como destaque principal */
+    --primary-foreground: 0 0% 100%;   /* branco sobre preto */
 
-    --secondary: 0 0% 16%;            /* cinza escuro */
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 0 0% 95%;             /* cinza muito claro */
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 65%;     /* cinza médio */
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;      /* cinza médio */
 
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 10%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 80%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 0%;
 
     --radius: 0.75rem;
 
-    /* Status colors — mantidos coloridos (apenas para sinalizar status, não para a UI base) */
-    --status-delivered: 0 0% 90%;
-    --status-delivered-bg: 0 0% 22%;
-    --status-pending: 0 0% 70%;
-    --status-pending-bg: 0 0% 18%;
-    --status-late: 0 75% 55%;
-    --status-late-bg: 0 60% 18%;
-    --status-review: 0 0% 80%;
-    --status-review-bg: 0 0% 24%;
-    --status-inprogress: 0 0% 85%;
-    --status-inprogress-bg: 0 0% 20%;
+    /* Status colors — adaptadas para fundo claro */
+    --status-delivered: 142 70% 35%;
+    --status-delivered-bg: 142 70% 95%;
+    --status-pending: 45 90% 40%;
+    --status-pending-bg: 45 90% 95%;
+    --status-late: 0 84% 60%;
+    --status-late-bg: 0 84% 96%;
+    --status-review: 215 80% 50%;
+    --status-review-bg: 215 80% 96%;
+    --status-inprogress: 280 60% 50%;
+    --status-inprogress-bg: 280 60% 96%;
 
-    /* Sidebar - mais escura que o conteúdo */
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 70%;
-    --sidebar-primary: 0 0% 96%;
-    --sidebar-primary-foreground: 0 0% 8%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 0 0% 80%;
+    /* Sidebar - cinza bem claro */
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 0 0% 25%;
+    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 92%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 0%;
   }
 }
 
@@ -73,15 +73,15 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 3px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
