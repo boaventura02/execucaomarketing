@@ -6,57 +6,58 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    /* Tema escuro monocromático: preto, branco, cinza */
+    --background: 0 0% 7%;            /* quase preto */
+    --foreground: 0 0% 96%;           /* branco suave */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card: 0 0% 11%;                 /* cinza muito escuro */
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 220 70% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 96%;              /* branco como destaque */
+    --primary-foreground: 0 0% 8%;    /* preto sobre branco */
 
-    --secondary: 220 15% 93%;
-    --secondary-foreground: 220 25% 10%;
+    --secondary: 0 0% 16%;            /* cinza escuro */
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 220 15% 93%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 65%;     /* cinza médio */
 
-    --accent: 220 15% 93%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 96%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 220 70% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 80%;
 
     --radius: 0.75rem;
 
-    /* Status colors */
-    --status-delivered: 152 69% 41%;
-    --status-delivered-bg: 152 69% 95%;
-    --status-pending: 38 92% 50%;
-    --status-pending-bg: 38 92% 95%;
-    --status-late: 0 72% 51%;
-    --status-late-bg: 0 72% 95%;
-    --status-review: 25 95% 53%;
-    --status-review-bg: 25 95% 95%;
-    --status-inprogress: 210 70% 50%;
-    --status-inprogress-bg: 210 70% 95%;
+    /* Status colors — mantidos coloridos (apenas para sinalizar status, não para a UI base) */
+    --status-delivered: 0 0% 90%;
+    --status-delivered-bg: 0 0% 22%;
+    --status-pending: 0 0% 70%;
+    --status-pending-bg: 0 0% 18%;
+    --status-late: 0 75% 55%;
+    --status-late-bg: 0 60% 18%;
+    --status-review: 0 0% 80%;
+    --status-review-bg: 0 0% 24%;
+    --status-inprogress: 0 0% 85%;
+    --status-inprogress-bg: 0 0% 20%;
 
-    /* Sidebar */
-    --sidebar-background: 220 25% 10%;
-    --sidebar-foreground: 220 15% 80%;
-    --sidebar-primary: 220 70% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 16%;
+    /* Sidebar - mais escura que o conteúdo */
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 70%;
+    --sidebar-primary: 0 0% 96%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 0 0% 14%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 25% 18%;
-    --sidebar-ring: 220 70% 50%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 0 0% 80%;
   }
 }
 
