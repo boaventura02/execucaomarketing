@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
 
 const STATUS_OPTIONS: StatusGeral[] = ["Concluído", "Em andamento", "Revisão", "Pendente", "Atrasado"];
+const AUTORIZADO_OPTIONS = ["", "Bruna", "Henrique", "Rodrigo"];
 
 function CellInput({
   row,
@@ -17,23 +18,42 @@ function CellInput({
   value: string;
   onUpdate: (val: string) => void;
 }) {
-  if (col.type === "select" && col.id === "statusGeral") {
-    return (
-      <select
-        value={value}
-        onChange={e => onUpdate(e.target.value)}
-        className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded"
-      >
-        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-      </select>
-    );
+  const isStatusGeralLocked = col.id === "statusGeral" && !row.autorizadoPor;
+
+  if (col.type === "select") {
+    if (col.id === "statusGeral") {
+      return (
+        <select
+          value={value}
+          disabled={isStatusGeralLocked}
+          onChange={e => onUpdate(e.target.value as StatusGeral)}
+          className={`w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer ${isStatusGeralLocked ? "opacity-30 cursor-not-allowed" : "hover:bg-white/50"}`}
+          title={isStatusGeralLocked ? "Preencha 'Autorizado por' primeiro" : ""}
+        >
+          {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      );
+    }
+    if (col.id === "autorizadoPor") {
+      return (
+        <select
+          value={value}
+          onChange={e => onUpdate(e.target.value)}
+          className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer hover:bg-white/50"
+        >
+          {AUTORIZADO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "Selecionar..."}</option>)}
+        </select>
+      );
+    }
   }
+
   return (
     <input
       type={col.type === "date" ? "date" : "text"}
       value={value}
       onChange={e => onUpdate(e.target.value)}
-      className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded"
+      placeholder={col.type === "date" ? "" : "..."}
+      className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded hover:bg-white/50 transition-colors"
     />
   );
 }
