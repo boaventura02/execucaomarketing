@@ -106,42 +106,49 @@ export default function ClientesPage() {
                                   <span className="text-muted-foreground">Qtd:</span>{" "}
                                   <span className="font-medium text-card-foreground">{item.quantidade || "—"}</span>
                                 </div>
-                                {item.statusEntrega && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Entrega: <span className="text-card-foreground">{item.statusEntrega}</span>
-                                  </div>
-                                )}
                               </div>
                               <StatusBadge status={item.statusGeral} size="sm" />
                             </div>
 
-                            {fullRow && (fullRow.dataGravacao || fullRow.dataEntregaPrevista || fullRow.prazoFinal || fullRow.observacoes || customColumns.some(cc => fullRow.custom[cc.id])) && (
+                            {fullRow && (
                               <div className="mt-3 pt-3 border-t border-border/60 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs">
-                                {fullRow.dataGravacao && (
-                                  <div><span className="text-muted-foreground">Gravação:</span> <span className="text-card-foreground">{formatDate(fullRow.dataGravacao)}</span></div>
-                                )}
-                                {fullRow.dataEntregaPrevista && (
-                                  <div><span className="text-muted-foreground">Entrega prev.:</span> <span className="text-card-foreground">{formatDate(fullRow.dataEntregaPrevista)}</span></div>
-                                )}
-                                {fullRow.prazoFinal && (
-                                  <div><span className="text-muted-foreground">Prazo:</span> <span className="text-card-foreground">{formatDate(fullRow.prazoFinal)}</span></div>
-                                )}
-                                {fullRow.autorizadoPor && (
-                                  <div><span className="text-muted-foreground">Autorizado:</span> <span className="text-card-foreground">{fullRow.autorizadoPor}</span></div>
-                                )}
+                                <div>
+                                  <span className="text-muted-foreground">Status Entrega:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.statusEntrega || "—"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Status Gravação:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.statusGravacao || "—"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Data Gravação:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.dataGravacao ? formatDate(fullRow.dataGravacao) : "—"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Entrega Prevista:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.dataEntregaPrevista ? formatDate(fullRow.dataEntregaPrevista) : "—"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Prazo Final:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.prazoFinal ? formatDate(fullRow.prazoFinal) : "—"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Autorizado por:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.autorizadoPor || "—"}</span>
+                                </div>
                                 {customColumns.map(cc => {
                                   const v = getCellValue(fullRow, cc);
-                                  if (!v) return null;
                                   return (
                                     <div key={cc.id}>
                                       <span className="text-muted-foreground">{cc.label}:</span>{" "}
-                                      <span className="text-card-foreground">{cc.type === "date" ? formatDate(v) : v}</span>
+                                      <span className="text-card-foreground">{v ? (cc.type === "date" ? formatDate(v) : v) : "—"}</span>
                                     </div>
                                   );
                                 })}
-                                {fullRow.observacoes && (
-                                  <div className="col-span-2 md:col-span-4"><span className="text-muted-foreground">Obs:</span> <span className="text-card-foreground">{fullRow.observacoes}</span></div>
-                                )}
+                                <div className="col-span-2 md:col-span-4">
+                                  <span className="text-muted-foreground">Observações:</span>{" "}
+                                  <span className="text-card-foreground">{fullRow.observacoes || "—"}</span>
+                                </div>
                               </div>
                             )}
                           </div>
