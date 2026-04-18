@@ -18,7 +18,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <BarChart3 className="w-6 h-6 text-sidebar-primary-foreground" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-sidebar-primary-foreground leading-none">
+          <h1 className="text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-white leading-none">
             Execução Marketing
           </h1>
           <p className="text-xs text-sidebar-foreground opacity-60 mt-1">Painel de gestão de entregas</p>

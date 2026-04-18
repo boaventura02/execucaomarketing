@@ -172,7 +172,7 @@ export default function PlanilhaPage() {
       <div className="p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Planilha</h1>
+            <h1 className="text-3xl font-serif font-bold text-white">Planilha</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Edite os dados — passe o mouse no cabeçalho para renomear ou excluir colunas. As mudanças refletem no dashboard em tempo real.
             </p>

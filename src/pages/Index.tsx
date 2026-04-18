@@ -60,7 +60,7 @@ export default function Dashboard() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-3xl font-serif font-bold text-white">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Visão geral das entregas e contratos</p>
         </div>
 
