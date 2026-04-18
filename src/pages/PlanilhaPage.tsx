@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Trash2, Save, Pencil, Check, X, Columns3 } from "lucide-react";
+import * as XLSX from "xlsx";
+import { Plus, Trash2, Save, Pencil, Check, X, Columns3, Download, FileSpreadsheet } from "lucide-react";
 import { useData, type StatusGeral, type ColumnDef, type ClientRow, type ColumnType } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
@@ -187,6 +188,41 @@ export default function PlanilhaPage() {
     toast({ title: "Dados salvos!", description: "As alterações foram aplicadas ao dashboard." });
   };
 
+  const buildExportMatrix = () => {
+    const headers = columns.map(c => c.label);
+    const data = rows.map(row => columns.map(col => getCellValue(row, col)));
+    return { headers, data };
+  };
+
+  const handleExportExcel = () => {
+    const { headers, data } = buildExportMatrix();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Controle Geral");
+    const date = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(wb, `Execucao-Marketing_${date}.xlsx`);
+    toast({ title: "Exportado!", description: `${rows.length} linhas exportadas para Excel.` });
+  };
+
+  const handleExportCSV = () => {
+    const { headers, data } = buildExportMatrix();
+    const csv = [headers, ...data]
+      .map(row => row.map(cell => {
+        const s = String(cell ?? "");
+        return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(";"))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().split("T")[0];
+    a.href = url;
+    a.download = `Execucao-Marketing_${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Exportado!", description: `${rows.length} linhas exportadas para CSV.` });
+  };
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8">
@@ -198,6 +234,20 @@ export default function PlanilhaPage() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              title="Exportar como CSV (abre no Excel)"
+            >
+              <Download className="w-4 h-4" /> CSV
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              title="Exportar como arquivo Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Excel
+            </button>
             <button
               onClick={() => setShowNewCol(true)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"

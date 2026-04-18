@@ -60,7 +60,7 @@ function genId() { return String(nextId++); }
 let nextColId = 1;
 function genColId() { return `c${nextColId++}`; }
 
-const initialData: Omit<ClientRow, "id" | "custom">[] = initialDataRows.length > 0 ? initialDataRows : [
+const initialData: Omit<ClientRow, "id" | "custom">[] = initialDataRows.length > 0 ? (initialDataRows as Omit<ClientRow, "id" | "custom">[]) : [
   { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Revisão", statusGeral: "Revisão", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
   { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 fotos", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
   { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
@@ -197,7 +197,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   });
 }
 
-const STORAGE_KEY = "execucao-marketing-data-v2";
+const STORAGE_KEY = "execucao-marketing-data-v3";
 
 interface PersistedState {
   rows: ClientRow[];
