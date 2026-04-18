@@ -235,6 +235,20 @@ export default function PlanilhaPage() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              title="Exportar como CSV (abre no Excel)"
+            >
+              <Download className="w-4 h-4" /> CSV
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              title="Exportar como arquivo Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Excel
+            </button>
+            <button
               onClick={() => setShowNewCol(true)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
             >
