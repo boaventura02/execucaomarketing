@@ -1,4 +1,4 @@
-// Auto-gerado a partir de Controle_de_Contratos_-_KPIs-3.xlsx
+// Auto-gerado a partir de Controle_de_Contratos_-_KPIs-4.xlsx
 // Não edite manualmente — gere novamente se a planilha mudar.
 
 export interface InitialRowData {
