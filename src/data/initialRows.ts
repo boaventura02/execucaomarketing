@@ -132,3 +132,5 @@ export const initialRows: InitialRowData[] = [
   { cliente: "Frutos de Goiás", dataFechamento: "2026-04-17", vencimentoContrato: "2026-07-17", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "2", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
   { cliente: "Frutos de Goiás", dataFechamento: "2026-04-17", vencimentoContrato: "2026-07-17", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 Fotos Profissionais", statusEntrega: "", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
 ];
+
+export const initialDataRows = initialRows;
