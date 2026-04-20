@@ -95,7 +95,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className="w-60 bg-sidebar flex-shrink-0 flex flex-col border-r border-sidebar-border relative overflow-hidden">
         {/* Logo Background */}
-        <div className="absolute inset-y-0 -left-1/4 w-[150%] pointer-events-none select-none opacity-[0.08] z-0">
+        <div className="absolute inset-y-0 -left-[50%] w-[100%] pointer-events-none select-none opacity-[0.06] z-0">
           <img src={logo} alt="" className="h-full w-full object-contain object-left" />
         </div>
 
