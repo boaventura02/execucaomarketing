@@ -163,18 +163,61 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground">
-      {/* Controls Overlay (visible on hover) */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[110] opacity-0 hover:opacity-100 transition-opacity">
-        <button onClick={() => setIsPaused(!isPaused)} className="p-2 bg-muted/80 rounded-full hover:bg-muted">
-          {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+      {/* Top Controls (always visible & interactive) */}
+      <div className="absolute top-4 right-4 flex gap-2 z-[110]">
+        <button
+          onClick={onExit}
+          title="Voltar para o site"
+          className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-bold uppercase tracking-wider">Voltar ao site</span>
         </button>
-        <button onClick={toggleFullscreen} className="p-2 bg-muted/80 rounded-full hover:bg-muted">
-          {isFullscreen ? <Minimize2 className="w-6 h-6" /> : <Maximize2 className="w-6 h-6" />}
+        <button
+          onClick={() => setIsPaused((p) => !p)}
+          title={isPaused ? "Retomar apresentação" : "Pausar este slide"}
+          className={`flex items-center gap-2 px-4 py-2 border shadow-lg rounded-full transition-all hover:scale-105 active:scale-95 ${
+            isPaused
+              ? "bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600 animate-pulse"
+              : "bg-card border-border hover:bg-muted"
+          }`}
+        >
+          {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+          <span className="text-sm font-bold uppercase tracking-wider">
+            {isPaused ? "Pausado" : "Pausar slide"}
+          </span>
         </button>
-        <button onClick={onExit} className="p-2 bg-destructive/80 text-white rounded-full hover:bg-destructive">
-          <X className="w-6 h-6" />
+        <button
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Sair tela cheia" : "Tela cheia"}
+          className="p-2.5 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+        >
+          {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+        </button>
+        <button
+          onClick={onExit}
+          title="Fechar apresentação (ESC)"
+          className="p-2.5 bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all hover:scale-105 active:scale-95"
+        >
+          <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Side Navigation Arrows */}
+      <button
+        onClick={() => setCurrentSlide((p) => (p - 1 + totalSlides) % totalSlides)}
+        title="Slide anterior"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+      >
+        <ChevronLeft className="w-7 h-7" />
+      </button>
+      <button
+        onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)}
+        title="Próximo slide"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+      >
+        <ChevronRight className="w-7 h-7" />
+      </button>
 
       <div className="flex-1 relative">
         <AnimatePresence initial={false} mode="wait">
