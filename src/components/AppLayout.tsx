@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, BarChart3, Table2, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Users, Table2, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import { useData } from "@/data/DataContext";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -71,8 +72,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col min-h-screen">
       {/* Top header com nome da empresa em destaque */}
       <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-5 flex items-center gap-4 flex-wrap">
-        <div className="w-11 h-11 rounded-xl bg-sidebar-primary flex items-center justify-center">
-          <BarChart3 className="w-6 h-6 text-sidebar-primary-foreground" />
+        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-sm">
+          <img src={logo} alt="Execução Marketing" className="w-full h-full object-contain" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
           <h1 className="text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-none">
