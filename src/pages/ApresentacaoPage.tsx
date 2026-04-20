@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, ArrowUpDown } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, ArrowUpDown, Play } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge } from "@/components/StatusBadge";
+import PresentationMode from "@/components/PresentationMode";
+import { Button } from "@/components/ui/button";
 
 const STATUS_COLORS: Record<string, string> = {
   "Concluído": "#22c55e",
@@ -18,6 +20,7 @@ type SortKey = "cliente" | "responsavel" | "tipoConteudo" | "totalContratado" | 
 
 export default function ApresentacaoPage() {
   const { summaries, rows } = useData();
+  const [isPresentationMode, setIsPresentationMode] = useState(true);
   const [visibleSection, setVisibleSection] = useState(0);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterCliente, setFilterCliente] = useState("");
