@@ -9,7 +9,7 @@ const navItems = [
   { to: "/planilha", label: "Planilha", icon: Table2 },
 ];
 
-function SyncIndicator() {
+function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
   const { syncStatus, lastSync, syncError, syncNow, sheetUrl } = useData();
 
   const formatTime = (d: Date | null) => {
@@ -20,45 +20,45 @@ function SyncIndicator() {
   let icon = <RefreshCw className="w-3.5 h-3.5" />;
   let label = "Aguardando…";
   let color = "text-muted-foreground";
-  let bg = "bg-muted/40";
+  let bg = isSidebar ? "bg-sidebar-accent/30" : "bg-muted/40";
 
   if (syncStatus === "syncing") {
     icon = <RefreshCw className="w-3.5 h-3.5 animate-spin" />;
     label = "Sincronizando…";
     color = "text-primary";
-    bg = "bg-primary/10";
+    bg = isSidebar ? "bg-primary/5" : "bg-primary/10";
   } else if (syncStatus === "success") {
     icon = <CheckCircle2 className="w-3.5 h-3.5" />;
     label = `Atualizado às ${formatTime(lastSync)}`;
     color = "text-status-delivered";
-    bg = "bg-status-delivered-bg/40";
+    bg = isSidebar ? "bg-status-delivered-bg/20" : "bg-status-delivered-bg/40";
   } else if (syncStatus === "error") {
     icon = <AlertTriangle className="w-3.5 h-3.5" />;
     label = "Erro de sincronização";
     color = "text-status-late";
-    bg = "bg-status-late-bg/40";
+    bg = isSidebar ? "bg-status-late-bg/20" : "bg-status-late-bg/40";
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex ${isSidebar ? "flex-col gap-1 p-3 mt-auto border-t border-sidebar-border" : "items-center gap-2"}`}>
       <button
         onClick={() => syncNow()}
         disabled={syncStatus === "syncing"}
         title={syncError || "Clique para sincronizar agora"}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${bg} ${color} hover:opacity-80 disabled:opacity-60`}
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${bg} ${color} hover:opacity-80 disabled:opacity-60 ${isSidebar ? "w-full" : ""}`}
       >
         {icon}
-        <span className="hidden sm:inline">{label}</span>
+        <span>{label}</span>
       </button>
       <a
         href={sheetUrl}
         target="_blank"
         rel="noopener noreferrer"
         title="Abrir planilha no Google Sheets"
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors ${isSidebar ? "w-full" : ""}`}
       >
         <ExternalLink className="w-3.5 h-3.5" />
-        <span className="hidden md:inline">Planilha</span>
+        <span>Abrir Planilha Google</span>
       </a>
     </div>
   );
@@ -81,7 +81,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </h1>
           <p className="text-base text-sidebar-foreground opacity-80 mt-2">Painel de gestão de entregas</p>
         </div>
-        <SyncIndicator />
+        {/* Removido o SyncIndicator daqui */}
       </header>
 
       {syncStatus === "error" && syncError && (
@@ -117,6 +117,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <SyncIndicator isSidebar />
         </nav>
         <div className="p-4 text-[10px] text-sidebar-foreground opacity-40 relative z-10">
           © 2026 Execução Marketing
