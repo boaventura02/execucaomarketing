@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, 
-  Play, Pause, ChevronLeft, ChevronRight, Maximize2, Minimize2, X
+  Play, Pause, ChevronLeft, ChevronRight, Maximize2, Minimize2, X, ArrowLeft
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
