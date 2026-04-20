@@ -117,6 +117,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <SyncIndicator isSidebar />
         </nav>
         <div className="p-4 text-[10px] text-sidebar-foreground opacity-40 relative z-10">
           © 2026 Execução Marketing
