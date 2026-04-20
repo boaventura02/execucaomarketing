@@ -72,8 +72,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col min-h-screen">
       {/* Top header com nome da empresa em destaque */}
       <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-5 flex items-center gap-4 flex-wrap">
-        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-sm">
-          <img src={logo} alt="Execução Marketing" className="w-full h-full object-contain" />
+        <div className="h-16 lg:h-20 flex items-center justify-center flex-shrink-0">
+          <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
           <h1 className="text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-none">
