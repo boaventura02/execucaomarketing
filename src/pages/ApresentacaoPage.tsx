@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, ArrowUpDown } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, ArrowUpDown, Play } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge } from "@/components/StatusBadge";
+import PresentationMode from "@/components/PresentationMode";
+import { Button } from "@/components/ui/button";
 
 const STATUS_COLORS: Record<string, string> = {
   "Concluído": "#22c55e",
@@ -18,6 +20,7 @@ type SortKey = "cliente" | "responsavel" | "tipoConteudo" | "totalContratado" | 
 
 export default function ApresentacaoPage() {
   const { summaries, rows } = useData();
+  const [isPresentationMode, setIsPresentationMode] = useState(true);
   const [visibleSection, setVisibleSection] = useState(0);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterCliente, setFilterCliente] = useState("");
@@ -143,12 +146,22 @@ export default function ApresentacaoPage() {
     return s;
   };
 
+  if (isPresentationMode) {
+    return <PresentationMode onExit={() => setIsPresentationMode(false)} />;
+  }
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8 opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
-          <h1 className="text-3xl font-serif font-bold text-foreground">Apresentação</h1>
-          <p className="text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
+        <div className="mb-8 flex justify-between items-center opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-foreground">Apresentação</h1>
+            <p className="text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
+          </div>
+          <Button onClick={() => setIsPresentationMode(true)} className="gap-2">
+            <Play className="w-4 h-4" />
+            Iniciar Modo TV
+          </Button>
         </div>
 
         {/* Seção 1 - Visão Geral */}
