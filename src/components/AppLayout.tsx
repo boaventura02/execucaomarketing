@@ -40,12 +40,12 @@ function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
   }
 
   return (
-    <div className={`flex ${isSidebar ? "flex-col gap-2 p-3 mt-4 border-t border-sidebar-border" : "items-center gap-2"}`}>
+    <div className={`flex ${isSidebar ? "flex-col gap-1 p-3 mt-auto border-t border-sidebar-border" : "items-center gap-2"}`}>
       <button
         onClick={() => syncNow()}
         disabled={syncStatus === "syncing"}
         title={syncError || "Clique para sincronizar agora"}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${bg} ${color} hover:opacity-80 disabled:opacity-60 ${isSidebar ? "w-full justify-center" : ""}`}
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${bg} ${color} hover:opacity-80 disabled:opacity-60 ${isSidebar ? "w-full" : ""}`}
       >
         {icon}
         <span>{label}</span>
@@ -55,10 +55,10 @@ function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
         target="_blank"
         rel="noopener noreferrer"
         title="Abrir planilha no Google Sheets"
-        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors ${isSidebar ? "w-full justify-center" : ""}`}
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors ${isSidebar ? "w-full" : ""}`}
       >
         <ExternalLink className="w-3.5 h-3.5" />
-        <span>Abrir Planilha</span>
+        <span>Abrir Planilha Google</span>
       </a>
     </div>
   );
