@@ -81,7 +81,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </h1>
           <p className="text-base text-sidebar-foreground opacity-80 mt-2">Painel de gestão de entregas</p>
         </div>
-        <SyncIndicator />
+        {/* Removido o SyncIndicator daqui */}
       </header>
 
       {syncStatus === "error" && syncError && (
