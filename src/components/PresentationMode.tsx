@@ -10,8 +10,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useData } from "@/data/DataContext";
 import { StatusBadge } from "@/components/StatusBadge";
+import logo from "@/assets/logo.png";
 
-const SLIDE_DURATION = 8000; // 8 seconds
+const SLIDE_DURATION = 10000; // 10 seconds
 
 const STATUS_COLORS: Record<string, string> = {
   "Concluído": "#22c55e",
