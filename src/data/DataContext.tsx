@@ -358,6 +358,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateRow, updateRowCustom, addRow, deleteRow,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
+      syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
     }}>
       {children}
     </DataContext.Provider>
