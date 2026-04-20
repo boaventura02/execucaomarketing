@@ -245,6 +245,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return initialColumns;
   });
 
+  // Sincronização com Google Sheets
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
+
   // Persiste mudanças no localStorage
   React.useEffect(() => {
     try {
@@ -254,6 +260,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error("Falha ao salvar no localStorage:", e);
     }
   }, [rows, columns]);
+
+  const syncNow = useCallback(async () => {
+    setSyncStatus("syncing");
+    setSyncError(null);
+    try {
+      const fetched = await fetchSheetRows();
+      if (!isMountedRef.current) return;
+      if (fetched.length === 0) {
+        throw new Error("A planilha foi lida mas está vazia.");
+      }
+      // Google Sheets é a fonte da verdade — substitui linhas pela versão remota.
+      // Preserva colunas customizadas por índice posicional.
+      setRows(prev => fetched.map((d, i) => ({
+        ...d,
+        id: genId(),
+        custom: prev[i]?.custom ?? {},
+      })));
+      setLastSync(new Date());
+      setSyncStatus("success");
+    } catch (e) {
+      if (!isMountedRef.current) return;
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("Erro ao sincronizar com Google Sheets:", msg);
+      setSyncError(msg);
+      setSyncStatus("error");
+    }
+  }, []);
+
+  // Polling: roda imediatamente e depois a cada 30s
+  useEffect(() => {
+    isMountedRef.current = true;
+    syncNow();
+    const interval = setInterval(syncNow, 30_000);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
+  }, [syncNow]);
 
   const updateRow = useCallback((id: string, updates: Partial<ClientRow>) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
