@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { initialDataRows } from "./initialRows";
+import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
 export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente";
 
@@ -123,6 +124,8 @@ const initialColumns: ColumnDef[] = [
   { id: "observacoes", kind: "base", label: "Observações", type: "text", width: "180px" },
 ];
 
+export type SyncStatus = "idle" | "syncing" | "success" | "error";
+
 interface DataContextType {
   rows: ClientRow[];
   columns: ColumnDef[];
@@ -139,6 +142,12 @@ interface DataContextType {
   allStatuses: StatusGeral[];
   /** Helper: lê o valor de uma coluna (base ou custom) de uma row. */
   getCellValue: (row: ClientRow, col: ColumnDef) => string;
+  /** Sincronização com Google Sheets */
+  syncStatus: SyncStatus;
+  lastSync: Date | null;
+  syncError: string | null;
+  syncNow: () => Promise<void>;
+  sheetUrl: string;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
