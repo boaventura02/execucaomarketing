@@ -76,7 +76,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain drop-shadow-xl" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          <h1 className="text-5xl lg:text-7xl font-serif font-bold italic tracking-tight text-foreground leading-tight">
+          <h1 className="text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-tight">
             Execução Marketing
           </h1>
           <p className="text-base text-sidebar-foreground opacity-80 mt-2">Painel de gestão de entregas</p>
