@@ -71,15 +71,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Top header com nome da empresa em destaque */}
-      <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-6 flex items-center gap-6 flex-wrap">
-        <div className="h-20 lg:h-28 flex items-center justify-center flex-shrink-0">
-          <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain drop-shadow-md" />
+      <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-8 flex items-center gap-8 flex-wrap">
+        <div className="h-24 lg:h-32 flex items-center justify-center flex-shrink-0">
+          <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain drop-shadow-xl" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          <h1 className="text-4xl lg:text-6xl font-serif font-bold italic tracking-tight text-foreground leading-tight">
+          <h1 className="text-5xl lg:text-7xl font-serif font-bold italic tracking-tight text-foreground leading-tight">
             Execução Marketing
           </h1>
-          <p className="text-sm text-sidebar-foreground opacity-70 mt-1">Painel de gestão de entregas</p>
+          <p className="text-base text-sidebar-foreground opacity-80 mt-2">Painel de gestão de entregas</p>
         </div>
         <SyncIndicator />
       </header>
@@ -95,8 +95,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className="w-60 bg-sidebar flex-shrink-0 flex flex-col border-r border-sidebar-border relative overflow-hidden">
         {/* Logo Background */}
-        <div className="absolute inset-y-0 -left-[50%] w-[100%] pointer-events-none select-none opacity-[0.06] z-0">
-          <img src={logo} alt="" className="h-full w-full object-contain object-left" />
+        <div className="absolute inset-y-0 -left-[250px] w-[500px] pointer-events-none select-none opacity-[0.05] z-0">
+          <img src={logo} alt="" className="h-full w-full object-contain" />
         </div>
 
         <nav className="flex-1 px-3 pt-4 relative z-10">
