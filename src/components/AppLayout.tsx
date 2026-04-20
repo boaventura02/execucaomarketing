@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, BarChart3, Table2, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Users, Table2, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import { useData } from "@/data/DataContext";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
