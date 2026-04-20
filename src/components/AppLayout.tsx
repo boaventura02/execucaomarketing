@@ -124,8 +124,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-auto">
-        {children}
+      <main className="flex-1 overflow-auto relative">
+        {/* Logo Background */}
+        <div className="absolute inset-0 pointer-events-none select-none opacity-[0.04] z-0 flex items-center justify-center">
+          <img src={logo} alt="" className="max-h-[80%] max-w-[60%] object-contain" />
+        </div>
+        <div className="relative z-10">
+          {children}
+        </div>
       </main>
       </div>
     </div>
