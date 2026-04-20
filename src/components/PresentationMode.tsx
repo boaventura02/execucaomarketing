@@ -439,7 +439,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       {/* Footer / Slide Indicator */}
       <footer className="h-20 border-t border-border flex items-center justify-between px-12 bg-card/50 backdrop-blur-sm">
         <div className="flex items-center gap-4">
-          <img src="/assets/logo.png" alt="Logo" className="h-10 opacity-50" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          <img src={logo} alt="Logo" className="h-10 opacity-50" />
           <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Execução Marketing • Dashboard TV</p>
         </div>
         <div className="flex gap-4">
