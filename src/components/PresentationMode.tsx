@@ -144,6 +144,26 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [summaries]);
 
+  // Priority ranking — clients that require the most attention based on STATUS
+  const clientesPrioridade = useMemo(() => {
+    const statusWeight: Record<string, number> = {
+      "Atrasado": 100,
+      "Pendente": 60,
+      "Revisão": 40,
+      "Em andamento": 20,
+      "Concluído": 0,
+    };
+    return [...summaries]
+      .map(c => {
+        const pendentes = c.totalItems - c.totalEntregues;
+        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso);
+        return { ...c, pendentes, score };
+      })
+      .filter(c => c.status !== "Concluído")
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [summaries]);
+
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
