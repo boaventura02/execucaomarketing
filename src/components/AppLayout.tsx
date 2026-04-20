@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, BarChart3, Table2 } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, Table2, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
+import { useData } from "@/data/DataContext";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -7,23 +8,87 @@ const navItems = [
   { to: "/planilha", label: "Planilha", icon: Table2 },
 ];
 
+function SyncIndicator() {
+  const { syncStatus, lastSync, syncError, syncNow, sheetUrl } = useData();
+
+  const formatTime = (d: Date | null) => {
+    if (!d) return "—";
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  };
+
+  let icon = <RefreshCw className="w-3.5 h-3.5" />;
+  let label = "Aguardando…";
+  let color = "text-muted-foreground";
+  let bg = "bg-muted/40";
+
+  if (syncStatus === "syncing") {
+    icon = <RefreshCw className="w-3.5 h-3.5 animate-spin" />;
+    label = "Sincronizando…";
+    color = "text-primary";
+    bg = "bg-primary/10";
+  } else if (syncStatus === "success") {
+    icon = <CheckCircle2 className="w-3.5 h-3.5" />;
+    label = `Atualizado às ${formatTime(lastSync)}`;
+    color = "text-status-delivered";
+    bg = "bg-status-delivered-bg/40";
+  } else if (syncStatus === "error") {
+    icon = <AlertTriangle className="w-3.5 h-3.5" />;
+    label = "Erro de sincronização";
+    color = "text-status-late";
+    bg = "bg-status-late-bg/40";
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => syncNow()}
+        disabled={syncStatus === "syncing"}
+        title={syncError || "Clique para sincronizar agora"}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${bg} ${color} hover:opacity-80 disabled:opacity-60`}
+      >
+        {icon}
+        <span className="hidden sm:inline">{label}</span>
+      </button>
+      <a
+        href={sheetUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Abrir planilha no Google Sheets"
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      >
+        <ExternalLink className="w-3.5 h-3.5" />
+        <span className="hidden md:inline">Planilha</span>
+      </a>
+    </div>
+  );
+}
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { syncError, syncStatus } = useData();
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Top header com nome da empresa em destaque */}
-      <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-5 flex items-center gap-4">
+      <header className="w-full bg-sidebar border-b border-sidebar-border px-6 lg:px-10 py-5 flex items-center gap-4 flex-wrap">
         <div className="w-11 h-11 rounded-xl bg-sidebar-primary flex items-center justify-center">
           <BarChart3 className="w-6 h-6 text-sidebar-primary-foreground" />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col flex-1 min-w-0">
           <h1 className="text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-none">
             Execução Marketing
           </h1>
           <p className="text-xs text-sidebar-foreground opacity-60 mt-1">Painel de gestão de entregas</p>
         </div>
+        <SyncIndicator />
       </header>
+
+      {syncStatus === "error" && syncError && (
+        <div className="w-full bg-status-late-bg/40 border-b border-status-late/30 px-6 lg:px-10 py-2 text-xs text-status-late flex items-center gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span><strong>Sincronização falhou:</strong> {syncError} — verifique se a planilha está com permissão "Qualquer pessoa com o link pode ver".</span>
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0">
       {/* Sidebar */}

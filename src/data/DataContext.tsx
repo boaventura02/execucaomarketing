@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { initialDataRows } from "./initialRows";
+import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
 export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente";
 
@@ -123,6 +124,8 @@ const initialColumns: ColumnDef[] = [
   { id: "observacoes", kind: "base", label: "Observações", type: "text", width: "180px" },
 ];
 
+export type SyncStatus = "idle" | "syncing" | "success" | "error";
+
 interface DataContextType {
   rows: ClientRow[];
   columns: ColumnDef[];
@@ -139,6 +142,12 @@ interface DataContextType {
   allStatuses: StatusGeral[];
   /** Helper: lê o valor de uma coluna (base ou custom) de uma row. */
   getCellValue: (row: ClientRow, col: ColumnDef) => string;
+  /** Sincronização com Google Sheets */
+  syncStatus: SyncStatus;
+  lastSync: Date | null;
+  syncError: string | null;
+  syncNow: () => Promise<void>;
+  sheetUrl: string;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -236,6 +245,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return initialColumns;
   });
 
+  // Sincronização com Google Sheets
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
+
   // Persiste mudanças no localStorage
   React.useEffect(() => {
     try {
@@ -245,6 +260,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error("Falha ao salvar no localStorage:", e);
     }
   }, [rows, columns]);
+
+  const syncNow = useCallback(async () => {
+    setSyncStatus("syncing");
+    setSyncError(null);
+    try {
+      const fetched = await fetchSheetRows();
+      if (!isMountedRef.current) return;
+      if (fetched.length === 0) {
+        throw new Error("A planilha foi lida mas está vazia.");
+      }
+      // Google Sheets é a fonte da verdade — substitui linhas pela versão remota.
+      // Preserva colunas customizadas por índice posicional.
+      setRows(prev => fetched.map((d, i) => ({
+        ...d,
+        id: genId(),
+        custom: prev[i]?.custom ?? {},
+      })));
+      setLastSync(new Date());
+      setSyncStatus("success");
+    } catch (e) {
+      if (!isMountedRef.current) return;
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("Erro ao sincronizar com Google Sheets:", msg);
+      setSyncError(msg);
+      setSyncStatus("error");
+    }
+  }, []);
+
+  // Polling: roda imediatamente e depois a cada 30s
+  useEffect(() => {
+    isMountedRef.current = true;
+    syncNow();
+    const interval = setInterval(syncNow, 30_000);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
+  }, [syncNow]);
 
   const updateRow = useCallback((id: string, updates: Partial<ClientRow>) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
@@ -305,6 +358,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateRow, updateRowCustom, addRow, deleteRow,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
+      syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
     }}>
       {children}
     </DataContext.Provider>
