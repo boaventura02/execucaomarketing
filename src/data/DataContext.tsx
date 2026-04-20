@@ -292,7 +292,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     syncNow();
-    const interval = setInterval(syncNow, 30_000);
+    const interval = setInterval(syncNow, 10_000);
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
