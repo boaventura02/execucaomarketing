@@ -146,12 +146,22 @@ export default function ApresentacaoPage() {
     return s;
   };
 
+  if (isPresentationMode) {
+    return <PresentationMode onExit={() => setIsPresentationMode(false)} />;
+  }
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8 opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
-          <h1 className="text-3xl font-serif font-bold text-foreground">Apresentação</h1>
-          <p className="text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
+        <div className="mb-8 flex justify-between items-center opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-foreground">Apresentação</h1>
+            <p className="text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
+          </div>
+          <Button onClick={() => setIsPresentationMode(true)} className="gap-2">
+            <Play className="w-4 h-4" />
+            Iniciar Modo TV
+          </Button>
         </div>
 
         {/* Seção 1 - Visão Geral */}
