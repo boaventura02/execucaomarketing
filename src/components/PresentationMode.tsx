@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, 
-  Play, Pause, ChevronLeft, ChevronRight, Maximize2, Minimize2, X
+  Play, Pause, ChevronLeft, ChevronRight, Maximize2, Minimize2, X, ArrowLeft
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -12,7 +12,7 @@ import { useData } from "@/data/DataContext";
 import { StatusBadge } from "@/components/StatusBadge";
 import logo from "@/assets/logo.png";
 
-const SLIDE_DURATION = 10000; // 10 seconds
+const SLIDE_DURATION = 15000; // 15 seconds
 
 const STATUS_COLORS: Record<string, string> = {
   "Concluído": "#22c55e",
@@ -144,6 +144,26 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [summaries]);
 
+  // Priority ranking — clients that require the most attention based on STATUS
+  const clientesPrioridade = useMemo(() => {
+    const statusWeight: Record<string, number> = {
+      "Atrasado": 100,
+      "Pendente": 60,
+      "Revisão": 40,
+      "Em andamento": 20,
+      "Concluído": 0,
+    };
+    return [...summaries]
+      .map(c => {
+        const pendentes = c.totalItems - c.totalEntregues;
+        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso);
+        return { ...c, pendentes, score };
+      })
+      .filter(c => c.status !== "Concluído")
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [summaries]);
+
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
@@ -163,18 +183,61 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground">
-      {/* Controls Overlay (visible on hover) */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[110] opacity-0 hover:opacity-100 transition-opacity">
-        <button onClick={() => setIsPaused(!isPaused)} className="p-2 bg-muted/80 rounded-full hover:bg-muted">
-          {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+      {/* Top Controls (always visible & interactive) */}
+      <div className="absolute top-4 right-4 flex gap-2 z-[110]">
+        <button
+          onClick={onExit}
+          title="Voltar para o site"
+          className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-bold uppercase tracking-wider">Voltar ao site</span>
         </button>
-        <button onClick={toggleFullscreen} className="p-2 bg-muted/80 rounded-full hover:bg-muted">
-          {isFullscreen ? <Minimize2 className="w-6 h-6" /> : <Maximize2 className="w-6 h-6" />}
+        <button
+          onClick={() => setIsPaused((p) => !p)}
+          title={isPaused ? "Retomar apresentação" : "Pausar este slide"}
+          className={`flex items-center gap-2 px-4 py-2 border shadow-lg rounded-full transition-all hover:scale-105 active:scale-95 ${
+            isPaused
+              ? "bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600 animate-pulse"
+              : "bg-card border-border hover:bg-muted"
+          }`}
+        >
+          {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+          <span className="text-sm font-bold uppercase tracking-wider">
+            {isPaused ? "Pausado" : "Pausar slide"}
+          </span>
         </button>
-        <button onClick={onExit} className="p-2 bg-destructive/80 text-white rounded-full hover:bg-destructive">
-          <X className="w-6 h-6" />
+        <button
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Sair tela cheia" : "Tela cheia"}
+          className="p-2.5 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+        >
+          {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+        </button>
+        <button
+          onClick={onExit}
+          title="Fechar apresentação (ESC)"
+          className="p-2.5 bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all hover:scale-105 active:scale-95"
+        >
+          <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Side Navigation Arrows */}
+      <button
+        onClick={() => setCurrentSlide((p) => (p - 1 + totalSlides) % totalSlides)}
+        title="Slide anterior"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+      >
+        <ChevronLeft className="w-7 h-7" />
+      </button>
+      <button
+        onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)}
+        title="Próximo slide"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+      >
+        <ChevronRight className="w-7 h-7" />
+      </button>
 
       <div className="flex-1 relative">
         <AnimatePresence initial={false} mode="wait">
@@ -366,58 +429,71 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 5: Alertas e Pendências */}
+            {/* Slide 5: Clientes que Requerem Maior Atenção */}
             {currentSlide === 4 && (
               <div className="space-y-8 h-full flex flex-col bg-red-500/5 -m-8 lg:-m-16 p-8 lg:p-16">
                 <header className="text-center">
-                  <h1 className="text-5xl lg:text-7xl font-serif font-bold text-red-600 mb-4 flex items-center justify-center gap-4">
-                    <AlertTriangle className="w-16 h-16 animate-pulse" />
-                    Alertas e Pendências
-                    <AlertTriangle className="w-16 h-16 animate-pulse" />
+                  <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
+                    <AlertTriangle className="w-14 h-14 animate-pulse" />
+                    Clientes que Requerem Atenção
+                    <AlertTriangle className="w-14 h-14 animate-pulse" />
                   </h1>
-                  <p className="text-2xl text-red-600/80 font-bold uppercase tracking-widest">Atenção Prioritária</p>
+                  <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
+                    Ranking por Prioridade de Status
+                  </p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 overflow-hidden">
-                  <div className="space-y-6">
-                    <h2 className="text-3xl font-bold border-b-4 border-red-500 pb-2 mb-6">Clientes Atrasados</h2>
-                    <div className="space-y-4 overflow-auto max-h-[500px] pr-4">
-                      {summaries.filter(c => c.status === "Atrasado").map(c => (
-                        <div key={c.cliente} className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border-4 border-red-500 shadow-2xl flex items-center justify-between">
-                          <div>
-                            <h3 className="text-3xl font-black text-red-600">{c.cliente}</h3>
-                            <p className="text-lg font-bold text-muted-foreground">Responsável: {c.responsavel}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-4xl font-black text-red-600">{c.totalItems - c.totalEntregues}</div>
-                            <div className="text-sm font-bold uppercase">Pendências</div>
-                          </div>
-                        </div>
-                      ))}
-                      {summaries.filter(c => c.status === "Atrasado").length === 0 && (
-                        <div className="bg-green-100 p-12 rounded-3xl border-4 border-green-500 text-center">
-                          <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                          <h3 className="text-3xl font-bold text-green-800">Nenhum cliente em atraso!</h3>
-                        </div>
-                      )}
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+                  {clientesPrioridade.length === 0 ? (
+                    <div className="lg:col-span-2 flex items-center justify-center">
+                      <div className="bg-green-100 dark:bg-green-950/30 p-16 rounded-3xl border-4 border-green-500 text-center">
+                        <CheckCircle2 className="w-24 h-24 text-green-600 mx-auto mb-6" />
+                        <h3 className="text-4xl font-bold text-green-800 dark:text-green-300">
+                          Tudo em dia! Nenhum cliente requer atenção.
+                        </h3>
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-6">
-                    <h2 className="text-3xl font-bold border-b-4 border-yellow-500 pb-2 mb-6">Próximos Prazos</h2>
-                    <div className="space-y-4 overflow-auto max-h-[500px] pr-4">
-                      {rows.filter(r => r.statusGeral !== "Concluído" && r.prazoFinal).sort((a, b) => a.prazoFinal.localeCompare(b.prazoFinal)).slice(0, 8).map(r => (
-                        <div key={r.id} className="bg-card p-6 rounded-2xl border-2 border-yellow-500 shadow-xl flex items-center justify-between">
-                          <div>
-                            <h3 className="text-xl font-bold">{r.cliente}</h3>
-                            <p className="text-sm text-muted-foreground">{r.tipoConteudo}</p>
+                  ) : (
+                    clientesPrioridade.map((c, idx) => {
+                      const isAtrasado = c.status === "Atrasado";
+                      const borderColor = isAtrasado
+                        ? "border-red-500"
+                        : c.status === "Pendente"
+                        ? "border-yellow-500"
+                        : "border-orange-500";
+                      const textColor = isAtrasado
+                        ? "text-red-600"
+                        : c.status === "Pendente"
+                        ? "text-yellow-600"
+                        : "text-orange-600";
+                      const bgRank = isAtrasado ? "bg-red-600" : c.status === "Pendente" ? "bg-yellow-600" : "bg-orange-600";
+                      return (
+                        <div
+                          key={c.cliente}
+                          className={`bg-card p-5 rounded-2xl border-4 ${borderColor} shadow-2xl flex items-center gap-5`}
+                        >
+                          <div className={`w-14 h-14 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-2xl shadow-lg`}>
+                            {idx + 1}
                           </div>
-                          <div className="text-right">
-                            <div className="text-xl font-bold text-yellow-600">{new Date(r.prazoFinal).toLocaleDateString("pt-BR")}</div>
-                            <div className="text-[10px] font-bold uppercase">Prazo Final</div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`text-2xl font-black truncate ${textColor}`}>{c.cliente}</h3>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <StatusBadge status={c.status} />
+                              <span className="text-sm font-bold text-muted-foreground truncate">
+                                {c.responsavel}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className={`text-3xl font-black ${textColor}`}>{c.pendentes}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Pendências
+                            </div>
+                            <div className="text-xs font-bold mt-1">{c.progresso}% concluído</div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
