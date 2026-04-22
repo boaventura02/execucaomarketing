@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Calendar, User, Layers } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Save } from "lucide-react";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
 
 function formatDate(d: string) {
   if (!d) return "—";
