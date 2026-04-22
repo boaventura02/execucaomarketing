@@ -21,13 +21,12 @@ function rowAccent(status: StatusGeral) {
 }
 
 export default function ClientesPage() {
-  const { summaries, allResponsaveis, allStatuses, columns, rows, getCellValue } = useData();
+  const { summaries, allResponsaveis, allStatuses, rows, updateRow } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const customColumns = useMemo(() => columns.filter(c => c.kind === "custom"), [columns]);
+  const [obsDrafts, setObsDrafts] = useState<Record<string, string>>({});
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
