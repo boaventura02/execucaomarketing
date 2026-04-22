@@ -217,6 +217,24 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
 }
 
 const STORAGE_KEY = "execucao-marketing-data-v5";
+const OVERRIDES_KEY = "execucao-marketing-overrides-v1";
+
+function loadOverrides(): LocalOverrides {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as LocalOverrides;
+  } catch {
+    return {};
+  }
+}
+
+function applyOverrides(rows: ClientRow[], overrides: LocalOverrides): ClientRow[] {
+  return rows.map(r => {
+    const o = overrides[overrideKey(r)];
+    return o ? { ...r, ...o } : r;
+  });
+}
 
 interface PersistedState {
   rows: ClientRow[];
