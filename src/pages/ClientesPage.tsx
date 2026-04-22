@@ -42,19 +42,19 @@ export default function ClientesPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-foreground">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Clique em um cliente para ver o detalhamento de cada item contratado</p>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Clientes</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Toque em um cliente para ver o detalhamento de cada item contratado</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-6">
-          <input type="text" placeholder="Buscar cliente..." value={filterCliente} onChange={e => setFilterCliente(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52" />
-          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mb-6">
+          <input type="text" placeholder="Buscar cliente..." value={filterCliente} onChange={e => setFilterCliente(e.target.value)} className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-52" />
+          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
             <option value="">Todos os responsáveis</option>
             {allResponsaveis.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
             <option value="">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -67,27 +67,27 @@ export default function ClientesPage() {
               <div key={c.cliente} className={`bg-card rounded-xl border border-border shadow-sm overflow-hidden border-l-4 ${rowAccent(c.status)}`}>
                 <button
                   onClick={() => toggle(c.cliente)}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-accent/40 transition-colors text-left"
+                  className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/40 transition-colors text-left min-h-[60px]"
                 >
                   <div className="flex-shrink-0 text-muted-foreground">
                     {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-card-foreground">{c.cliente}</p>
-                    <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                    <p className="font-semibold text-card-foreground truncate">{c.cliente}</p>
+                    <div className="flex items-center gap-2 sm:gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsavel}</span>
-                      <span className="flex items-center gap-1"><Layers className="w-3 h-3" />{c.totalEntregues}/{c.totalItems} itens</span>
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Vence {formatDate(c.vencimentoContrato)}</span>
+                      <span className="flex items-center gap-1"><Layers className="w-3 h-3" />{c.totalEntregues}/{c.totalItems}</span>
+                      <span className="hidden sm:flex items-center gap-1"><Calendar className="w-3 h-3" />Vence {formatDate(c.vencimentoContrato)}</span>
                     </div>
                   </div>
                   <div className="hidden md:block w-44">
                     <ProgressBar value={c.progresso} />
                   </div>
-                  <StatusBadge status={c.status} />
+                  <StatusBadge status={c.status} size="sm" />
                 </button>
 
                 {isOpen && (
-                  <div className="border-t border-border bg-secondary/30 px-5 py-4">
+                  <div className="border-t border-border bg-secondary/30 px-4 sm:px-5 py-4">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                       Itens contratados ({c.items.length})
                     </h4>
@@ -131,10 +131,10 @@ export default function ClientesPage() {
                                 className="text-sm bg-background min-h-[70px]"
                               />
                               {isDirty && (
-                                <div className="flex justify-end gap-2 mt-2">
+                                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-2">
                                   <button
                                     onClick={() => setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; })}
-                                    className="px-3 py-1.5 text-xs rounded-md border border-border hover:bg-accent transition-colors"
+                                    className="px-3 py-2 min-h-[40px] text-xs rounded-md border border-border hover:bg-accent transition-colors"
                                   >
                                     Cancelar
                                   </button>
@@ -144,7 +144,7 @@ export default function ClientesPage() {
                                       setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; });
                                       toast({ title: "Observação salva", description: `${item.tipo || "Item"} atualizado.` });
                                     }}
-                                    className="px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 font-medium"
+                                    className="px-3 py-2 min-h-[40px] text-xs rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 font-medium"
                                   >
                                     <Save className="w-3 h-3" />
                                     Salvar
