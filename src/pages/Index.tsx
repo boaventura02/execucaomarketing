@@ -58,31 +58,31 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Visão geral das entregas e contratos</p>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Dashboard</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Visão geral das entregas e contratos</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mb-6">
           <input
             type="text"
             placeholder="Buscar cliente..."
             value={filterCliente}
             onChange={e => setFilterCliente(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
+            className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-52"
           />
-          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
             <option value="">Todos os responsáveis</option>
             {allResponsaveis.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
             <option value="">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
           <KpiCard title="Entregues" value={entregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={80} />
           <KpiCard title="Pendentes" value={pendentes} icon={Clock} color="text-status-pending" bgColor="bg-status-pending-bg" delay={160} />
@@ -90,8 +90,8 @@ export default function Dashboard() {
           <KpiCard title="Progresso Médio" value={`${avgProgress}%`} icon={TrendingUp} color="text-primary" bgColor="bg-primary/10" delay={320} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-card rounded-xl p-4 sm:p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Distribuição de Status</h3>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -111,7 +111,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+          <div className="bg-card rounded-xl p-4 sm:p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Clientes por Responsável</h3>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={respData} layout="vertical" margin={{ left: 10, right: 20 }}>
@@ -124,7 +124,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+          <div className="bg-card rounded-xl p-4 sm:p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Contratado vs Entregue</h3>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={deliveryData} margin={{ left: -10, right: 10 }}>
@@ -145,15 +145,22 @@ export default function Dashboard() {
           </div>
           <div className="divide-y divide-border">
             {filtered.map(c => (
-              <div key={c.cliente} className={`flex items-center gap-4 px-5 py-4 hover:bg-accent/50 transition-colors ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-card-foreground truncate">{c.cliente}</p>
-                  <p className="text-xs text-muted-foreground">{c.responsavel}</p>
+              <div key={c.cliente} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/50 transition-colors ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}>
+                <div className="flex items-center justify-between gap-3 sm:flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-card-foreground truncate">{c.cliente}</p>
+                    <p className="text-xs text-muted-foreground truncate">{c.responsavel}</p>
+                  </div>
+                  <div className="sm:hidden flex-shrink-0">
+                    <StatusBadge status={c.status} />
+                  </div>
                 </div>
-                <div className="w-40 hidden sm:block">
+                <div className="w-full sm:w-40">
                   <ProgressBar value={c.progresso} />
                 </div>
-                <StatusBadge status={c.status} />
+                <div className="hidden sm:block">
+                  <StatusBadge status={c.status} />
+                </div>
               </div>
             ))}
             {filtered.length === 0 && (

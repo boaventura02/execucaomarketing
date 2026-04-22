@@ -184,42 +184,43 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground">
       {/* Top Controls (always visible & interactive) */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[110]">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-wrap justify-end gap-1.5 sm:gap-2 z-[110] max-w-[calc(100%-1rem)]">
         <button
           onClick={onExit}
           title="Voltar para o site"
-          className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 min-h-[40px] bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-bold uppercase tracking-wider">Voltar ao site</span>
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider hidden sm:inline">Voltar ao site</span>
+          <span className="text-xs font-bold uppercase tracking-wider sm:hidden">Voltar</span>
         </button>
         <button
           onClick={() => setIsPaused((p) => !p)}
           title={isPaused ? "Retomar apresentação" : "Pausar este slide"}
-          className={`flex items-center gap-2 px-4 py-2 border shadow-lg rounded-full transition-all hover:scale-105 active:scale-95 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 min-h-[40px] border shadow-lg rounded-full transition-all hover:scale-105 active:scale-95 ${
             isPaused
               ? "bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600 animate-pulse"
               : "bg-card border-border hover:bg-muted"
           }`}
         >
-          {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-          <span className="text-sm font-bold uppercase tracking-wider">
+          {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
+          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider hidden sm:inline">
             {isPaused ? "Pausado" : "Pausar slide"}
           </span>
         </button>
         <button
           onClick={toggleFullscreen}
           title={isFullscreen ? "Sair tela cheia" : "Tela cheia"}
-          className="p-2.5 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+          className="hidden sm:inline-flex p-2.5 min-h-[40px] min-w-[40px] items-center justify-center bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
         >
           {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
         </button>
         <button
           onClick={onExit}
           title="Fechar apresentação (ESC)"
-          className="p-2.5 bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all hover:scale-105 active:scale-95"
+          className="p-2 sm:p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all hover:scale-105 active:scale-95"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 
@@ -227,16 +228,16 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       <button
         onClick={() => setCurrentSlide((p) => (p - 1 + totalSlides) % totalSlides)}
         title="Slide anterior"
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-[110] p-2 sm:p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
       >
-        <ChevronLeft className="w-7 h-7" />
+        <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7" />
       </button>
       <button
         onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)}
         title="Próximo slide"
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-[110] p-2 sm:p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
       >
-        <ChevronRight className="w-7 h-7" />
+        <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7" />
       </button>
 
       <div className="flex-1 relative">
@@ -247,7 +248,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 p-8 lg:p-16 flex flex-col justify-center"
+            className="absolute inset-0 p-4 sm:p-8 lg:p-16 pt-16 sm:pt-20 flex flex-col justify-center overflow-y-auto"
           >
             {/* Slide 1: Visão Geral */}
             {currentSlide === 0 && (

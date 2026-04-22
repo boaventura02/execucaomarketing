@@ -152,13 +152,13 @@ export default function ApresentacaoPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8 flex justify-between items-center opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 opacity-0 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "forwards" }}>
           <div>
-            <h1 className="text-3xl font-serif font-bold text-foreground">Apresentação</h1>
-            <p className="text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Apresentação</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
           </div>
-          <Button onClick={() => setIsPresentationMode(true)} className="gap-2">
+          <Button onClick={() => setIsPresentationMode(true)} className="gap-2 min-h-[44px] w-full sm:w-auto">
             <Play className="w-4 h-4" />
             Iniciar Modo TV
           </Button>
@@ -172,7 +172,7 @@ export default function ApresentacaoPage() {
               <h2 className="text-xl font-serif font-semibold text-foreground">Visão Geral</h2>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
               <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
               <KpiCard title="Contratados" value={totalContratado} icon={TrendingUp} color="text-primary" bgColor="bg-primary/10" delay={80} />
               <KpiCard title="Entregues" value={totalEntregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={160} />
@@ -323,18 +323,18 @@ export default function ApresentacaoPage() {
               <h2 className="text-xl font-serif font-semibold text-foreground">Por Cliente</h2>
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mb-4">
               <input
                 type="text"
                 placeholder="Buscar cliente..."
                 value={filterCliente}
                 onChange={e => setFilterCliente(e.target.value)}
-                className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
+                className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-52"
               />
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
-                className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto"
               >
                 <option value="">Todos os status</option>
                 {Object.keys(STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}

@@ -225,44 +225,44 @@ export default function PlanilhaPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-foreground">Planilha</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Planilha</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Edite os dados — passe o mouse no cabeçalho para renomear ou excluir colunas. As mudanças refletem no dashboard em tempo real.
             </p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-2 sm:flex gap-2 sm:flex-wrap">
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
               title="Exportar como CSV (abre no Excel)"
             >
               <Download className="w-4 h-4" /> CSV
             </button>
             <button
               onClick={handleExportExcel}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
               title="Exportar como arquivo Excel (.xlsx)"
             >
               <FileSpreadsheet className="w-4 h-4" /> Excel
             </button>
             <button
               onClick={() => setShowNewCol(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] text-sm font-medium rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-colors"
             >
-              <Columns3 className="w-4 h-4" /> Nova Coluna
+              <Columns3 className="w-4 h-4" /> <span className="hidden sm:inline">Nova </span>Coluna
             </button>
             <button
               onClick={addRow}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              <Plus className="w-4 h-4" /> Nova Linha
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova </span>Linha
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-status-delivered text-primary-foreground hover:opacity-90 transition-colors"
+              className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] text-sm font-medium rounded-lg bg-status-delivered text-primary-foreground hover:opacity-90 transition-colors"
             >
               <Save className="w-4 h-4" /> Salvar
             </button>
