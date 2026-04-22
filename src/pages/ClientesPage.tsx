@@ -1,9 +1,19 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Calendar, User, Layers } from "lucide-react";
-import { useData, type StatusGeral } from "@/data/DataContext";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Info } from "lucide-react";
+import { useData, type StatusGeral, type ClientRow } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function formatDate(d: string) {
   if (!d) return "—";
@@ -18,14 +28,30 @@ function rowAccent(status: StatusGeral) {
   return "border-l-status-pending bg-status-pending-bg/20";
 }
 
+const STATUS_ENTREGA_OPTIONS = [
+  "Pendente",
+  "Em produção",
+  "Em edição",
+  "Revisão",
+  "Aguardando aprovação",
+  "Entregue",
+  "Atrasado",
+];
+
+const STATUS_GERAL_OPTIONS: StatusGeral[] = [
+  "Pendente",
+  "Em andamento",
+  "Revisão",
+  "Concluído",
+  "Atrasado",
+];
+
 export default function ClientesPage() {
-  const { summaries, allResponsaveis, allStatuses, columns, rows, getCellValue } = useData();
+  const { summaries, allResponsaveis, allStatuses, rows, editRowLocal } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const customColumns = useMemo(() => columns.filter(c => c.kind === "custom"), [columns]);
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
@@ -41,18 +67,43 @@ export default function ClientesPage() {
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-serif font-bold text-foreground">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Clique em um cliente para ver o detalhamento de cada item contratado</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Clique em um cliente para ver e editar os itens contratados
+          </p>
+        </div>
+
+        <div className="mb-6 flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/40 text-xs text-muted-foreground">
+          <Info className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+          <p>
+            As alterações são salvas automaticamente neste dispositivo e permanecem mesmo após a sincronização
+            com a planilha. <strong>Importante:</strong> a sincronização com o Google Sheets é apenas de leitura,
+            portanto suas edições aparecem aqui no painel mas não são gravadas de volta na planilha original.
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6">
-          <input type="text" placeholder="Buscar cliente..." value={filterCliente} onChange={e => setFilterCliente(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52" />
-          <select value={filterResp} onChange={e => setFilterResp(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+          <input
+            type="text"
+            placeholder="Buscar cliente..."
+            value={filterCliente}
+            onChange={e => setFilterCliente(e.target.value)}
+            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
+          />
+          <select
+            value={filterResp}
+            onChange={e => setFilterResp(e.target.value)}
+            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
             <option value="">Todos os responsáveis</option>
             {allResponsaveis.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+          <select
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+            className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
             <option value="">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -62,7 +113,10 @@ export default function ClientesPage() {
           {filtered.map(c => {
             const isOpen = !!expanded[c.cliente];
             return (
-              <div key={c.cliente} className={`bg-card rounded-xl border border-border shadow-sm overflow-hidden border-l-4 ${rowAccent(c.status)}`}>
+              <div
+                key={c.cliente}
+                className={`bg-card rounded-xl border border-border shadow-sm overflow-hidden border-l-4 ${rowAccent(c.status)}`}
+              >
                 <button
                   onClick={() => toggle(c.cliente)}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-accent/40 transition-colors text-left"
@@ -89,69 +143,16 @@ export default function ClientesPage() {
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                       Itens contratados ({c.items.length})
                     </h4>
-                    <div className="grid gap-2">
+                    <div className="grid gap-3">
                       {c.items.map(item => {
                         const fullRow = rows.find(r => r.id === item.rowId);
+                        if (!fullRow) return null;
                         return (
-                          <div
+                          <ItemEditor
                             key={item.rowId}
-                            className={`rounded-lg border border-border bg-card p-3 border-l-4 ${rowAccent(item.statusGeral)}`}
-                          >
-                            <div className="flex items-center justify-between gap-3 flex-wrap">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold">
-                                  {item.tipo || "—"}
-                                </span>
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">Qtd:</span>{" "}
-                                  <span className="font-medium text-card-foreground">{item.quantidade || "—"}</span>
-                                </div>
-                              </div>
-                              <StatusBadge status={item.statusGeral} size="sm" />
-                            </div>
-
-                            {fullRow && (
-                              <div className="mt-3 pt-3 border-t border-border/60 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs">
-                                <div>
-                                  <span className="text-muted-foreground">Status Entrega:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.statusEntrega || "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Status Gravação:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.statusGravacao || "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Data Gravação:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.dataGravacao ? formatDate(fullRow.dataGravacao) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Entrega Prevista:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.dataEntregaPrevista ? formatDate(fullRow.dataEntregaPrevista) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Prazo Final:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.prazoFinal ? formatDate(fullRow.prazoFinal) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Autorizado por:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.autorizadoPor || "—"}</span>
-                                </div>
-                                {customColumns.map(cc => {
-                                  const v = getCellValue(fullRow, cc);
-                                  return (
-                                    <div key={cc.id}>
-                                      <span className="text-muted-foreground">{cc.label}:</span>{" "}
-                                      <span className="text-card-foreground">{v ? (cc.type === "date" ? formatDate(v) : v) : "—"}</span>
-                                    </div>
-                                  );
-                                })}
-                                <div className="col-span-2 md:col-span-4">
-                                  <span className="text-muted-foreground">Observações:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.observacoes || "—"}</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                            row={fullRow}
+                            onChange={(updates) => editRowLocal(fullRow.id, updates)}
+                          />
                         );
                       })}
                     </div>
@@ -169,5 +170,98 @@ export default function ClientesPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+interface ItemEditorProps {
+  row: ClientRow;
+  onChange: (updates: Partial<Pick<ClientRow, "statusEntrega" | "statusGeral" | "autorizadoPor" | "observacoes">>) => void;
+}
+
+function ItemEditor({ row, onChange }: ItemEditorProps) {
+  return (
+    <div className={`rounded-lg border border-border bg-card p-4 border-l-4 ${rowAccent(row.statusGeral)}`}>
+      {/* Cabeçalho: Tipo + Quantidade */}
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold">
+            {row.tipoConteudo || "Sem tipo"}
+          </span>
+          <div className="text-sm">
+            <span className="text-muted-foreground">Quantidade:</span>{" "}
+            <span className="font-medium text-card-foreground">{row.quantidadeContratada || "—"}</span>
+          </div>
+        </div>
+        <StatusBadge status={row.statusGeral} size="sm" />
+      </div>
+
+      {/* Campos editáveis */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Status de Entrega
+          </Label>
+          <Select
+            value={row.statusGeral}
+            onValueChange={(v) => onChange({ statusGeral: v as StatusGeral })}
+          >
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_GERAL_OPTIONS.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Detalhe da Entrega
+          </Label>
+          <Select
+            value={row.statusEntrega || "—"}
+            onValueChange={(v) => onChange({ statusEntrega: v === "—" ? "" : v })}
+          >
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue placeholder="Selecione..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="—">—</SelectItem>
+              {STATUS_ENTREGA_OPTIONS.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Autorizado por
+          </Label>
+          <Input
+            value={row.autorizadoPor}
+            onChange={(e) => onChange({ autorizadoPor: e.target.value })}
+            placeholder="Nome do responsável"
+            className="h-9 text-sm"
+            maxLength={100}
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-1.5">
+        <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+          Observações
+        </Label>
+        <Textarea
+          value={row.observacoes}
+          onChange={(e) => onChange({ observacoes: e.target.value })}
+          placeholder="Adicione observações sobre este item..."
+          className="min-h-[70px] text-sm resize-y"
+          maxLength={1000}
+        />
+      </div>
+    </div>
   );
 }
