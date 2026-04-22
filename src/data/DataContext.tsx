@@ -127,7 +127,7 @@ const initialColumns: ColumnDef[] = [
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
 
 /** Campos persistidos localmente como overrides (sobrevivem à sync da planilha). */
-type OverrideFields = Pick<ClientRow, "statusEntrega" | "statusGeral" | "autorizadoPor" | "observacoes">;
+type OverrideFields = Pick<ClientRow, "statusGeral" | "autorizadoPor" | "observacoes">;
 type LocalOverrides = Record<string, Partial<OverrideFields>>;
 
 function overrideKey(r: Pick<ClientRow, "cliente" | "tipoConteudo" | "quantidadeContratada">) {
@@ -223,7 +223,15 @@ function loadOverrides(): LocalOverrides {
   try {
     const raw = localStorage.getItem(OVERRIDES_KEY);
     if (!raw) return {};
-    return JSON.parse(raw) as LocalOverrides;
+    const parsed = JSON.parse(raw) as Record<string, Record<string, unknown>>;
+    // Remove qualquer override antigo de statusEntrega — esse campo agora é somente leitura (vem da planilha).
+    const cleaned: LocalOverrides = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (!v || typeof v !== "object") continue;
+      const { statusEntrega, ...rest } = v as Record<string, unknown>;
+      cleaned[k] = rest as Partial<OverrideFields>;
+    }
+    return cleaned;
   } catch {
     return {};
   }
