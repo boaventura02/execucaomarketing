@@ -408,7 +408,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   return (
     <DataContext.Provider value={{
       rows, columns, setRows,
-      updateRow, updateRowCustom, addRow, deleteRow,
+      updateRow, editRowLocal, updateRowCustom, addRow, deleteRow,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
