@@ -196,7 +196,7 @@ function ItemEditor({ row, onChange }: ItemEditorProps) {
       </div>
 
       {/* Campos editáveis */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
             Status de Entrega
@@ -210,26 +210,6 @@ function ItemEditor({ row, onChange }: ItemEditorProps) {
             </SelectTrigger>
             <SelectContent>
               {STATUS_GERAL_OPTIONS.map(s => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            Detalhe da Entrega
-          </Label>
-          <Select
-            value={row.statusEntrega || "—"}
-            onValueChange={(v) => onChange({ statusEntrega: v === "—" ? "" : v })}
-          >
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue placeholder="Selecione..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="—">—</SelectItem>
-              {STATUS_ENTREGA_OPTIONS.map(s => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
