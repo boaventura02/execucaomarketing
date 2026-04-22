@@ -170,7 +170,8 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   return Array.from(grouped.entries()).map(([cliente, cRows]) => {
     const first = cRows[0];
     const totalItems = cRows.length;
-    const totalEntregues = cRows.filter(r => r.statusGeral === "Concluído").length;
+    // "Entregues" nos gráficos inclui Concluído, Pendente e Revisão (contam para a porcentagem)
+    const totalEntregues = cRows.filter(r => r.statusGeral === "Concluído" || r.statusGeral === "Pendente" || r.statusGeral === "Revisão").length;
     const progresso = Math.round((totalEntregues / totalItems) * 100);
 
     let status: StatusGeral;
