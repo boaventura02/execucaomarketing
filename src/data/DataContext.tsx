@@ -223,7 +223,15 @@ function loadOverrides(): LocalOverrides {
   try {
     const raw = localStorage.getItem(OVERRIDES_KEY);
     if (!raw) return {};
-    return JSON.parse(raw) as LocalOverrides;
+    const parsed = JSON.parse(raw) as Record<string, Record<string, unknown>>;
+    // Remove qualquer override antigo de statusEntrega — esse campo agora é somente leitura (vem da planilha).
+    const cleaned: LocalOverrides = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (!v || typeof v !== "object") continue;
+      const { statusEntrega, ...rest } = v as Record<string, unknown>;
+      cleaned[k] = rest as Partial<OverrideFields>;
+    }
+    return cleaned;
   } catch {
     return {};
   }
