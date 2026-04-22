@@ -270,13 +270,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (fetched.length === 0) {
         throw new Error("A planilha foi lida mas está vazia.");
       }
-      // Google Sheets é a fonte da verdade — substitui linhas pela versão remota.
-      // Preserva colunas customizadas por índice posicional.
-      setRows(prev => fetched.map((d, i) => ({
-        ...d,
-        id: genId(),
-        custom: prev[i]?.custom ?? {},
-      })));
+      // Google Sheets é a fonte da verdade para a maioria dos campos,
+      // MAS preservamos `observacoes` e `custom` editados localmente,
+      // indexando por (cliente | tipoConteudo | quantidadeContratada).
+      setRows(prev => {
+        const localByKey = new Map<string, ClientRow>();
+        prev.forEach(r => {
+          const key = `${r.cliente}||${r.tipoConteudo}||${r.quantidadeContratada}`;
+          localByKey.set(key, r);
+        });
+        return fetched.map((d, i) => {
+          const key = `${d.cliente}||${d.tipoConteudo}||${d.quantidadeContratada}`;
+          const local = localByKey.get(key);
+          return {
+            ...d,
+            // Observações são SEMPRE preservadas localmente (a planilha não as gerencia).
+            observacoes: local?.observacoes || d.observacoes || "",
+            id: genId(),
+            custom: local?.custom ?? prev[i]?.custom ?? {},
+          };
+        });
+      });
       setLastSync(new Date());
       setSyncStatus("success");
     } catch (e) {
