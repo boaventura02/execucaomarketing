@@ -17,6 +17,7 @@ function rowAccent(status: StatusGeral) {
   if (status === "Revisão") return "border-l-status-review bg-status-review-bg/20";
   if (status === "Em andamento") return "border-l-status-inprogress bg-status-inprogress-bg/20";
   if (status === "Concluído") return "border-l-status-delivered bg-status-delivered-bg/10";
+  if (status === "Não definido") return "border-l-border bg-background";
   return "border-l-status-pending bg-status-pending-bg/20";
 }
 

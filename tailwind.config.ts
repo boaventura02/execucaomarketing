@@ -72,6 +72,8 @@ export default {
           "review-bg": "hsl(var(--status-review-bg))",
           inprogress: "hsl(var(--status-inprogress))",
           "inprogress-bg": "hsl(var(--status-inprogress-bg))",
+          undefined: "hsl(var(--status-undefined))",
+          "undefined-bg": "hsl(var(--status-undefined-bg))",
         },
       },
       borderRadius: {
