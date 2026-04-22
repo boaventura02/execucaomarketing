@@ -345,6 +345,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
   }, []);
 
+  const editRowLocal = useCallback((id: string, updates: Partial<OverrideFields>) => {
+    setRows(prev => {
+      const target = prev.find(r => r.id === id);
+      if (target) {
+        const key = overrideKey(target);
+        setOverrides(o => ({ ...o, [key]: { ...(o[key] || {}), ...updates } }));
+      }
+      return prev.map(r => r.id === id ? { ...r, ...updates } : r);
+    });
+  }, []);
+
   const updateRowCustom = useCallback((id: string, columnId: string, value: string) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, custom: { ...r.custom, [columnId]: value } } : r));
   }, []);
