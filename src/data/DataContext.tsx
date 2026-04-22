@@ -289,6 +289,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [rows, columns]);
 
+  const [overrides, setOverrides] = useState<LocalOverrides>(() =>
+    typeof window !== "undefined" ? loadOverrides() : {}
+  );
+
+  // Persiste overrides
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+    } catch (e) {
+      console.error("Falha ao salvar overrides:", e);
+    }
+  }, [overrides]);
+
   const syncNow = useCallback(async () => {
     setSyncStatus("syncing");
     setSyncError(null);
@@ -299,12 +312,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         throw new Error("A planilha foi lida mas está vazia.");
       }
       // Google Sheets é a fonte da verdade — substitui linhas pela versão remota.
-      // Preserva colunas customizadas por índice posicional.
-      setRows(prev => fetched.map((d, i) => ({
-        ...d,
-        id: genId(),
-        custom: prev[i]?.custom ?? {},
-      })));
+      // Preserva colunas customizadas por índice posicional e reaplica overrides locais.
+      setRows(prev => {
+        const merged: ClientRow[] = fetched.map((d, i) => ({
+          ...d,
+          id: genId(),
+          custom: prev[i]?.custom ?? {},
+        }));
+        return applyOverrides(merged, overrides);
+      });
       setLastSync(new Date());
       setSyncStatus("success");
     } catch (e) {
