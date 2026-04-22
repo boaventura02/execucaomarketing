@@ -68,12 +68,13 @@ function normalizeDate(s: string): string {
 /** Normaliza string de status para o tipo StatusGeral. */
 function normalizeStatusGeral(s: string): StatusGeral {
   const v = (s || "").trim().toLowerCase();
-  if (!v) return "Pendente";
+  if (!v) return "Não definido";
   if (v.includes("conclu") || v.includes("entreg")) return "Concluído";
   if (v.includes("atras")) return "Atrasado";
   if (v.includes("revis")) return "Revisão";
+  if (v.includes("pend")) return "Pendente";
   if (v.includes("andam") || v.includes("produc") || v.includes("edi")) return "Em andamento";
-  return "Pendente";
+  return "Não definido";
 }
 
 /** Mapeia o array bruto de células (headers + linhas) para ClientRow[]. */

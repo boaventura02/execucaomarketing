@@ -48,6 +48,8 @@
     --status-review-bg: 215 80% 96%;
     --status-inprogress: 280 60% 50%;
     --status-inprogress-bg: 280 60% 96%;
+    --status-undefined: 0 0% 55%;
+    --status-undefined-bg: 0 0% 100%;
 
     /* Sidebar - cinza bem claro */
     --sidebar-background: 0 0% 97%;

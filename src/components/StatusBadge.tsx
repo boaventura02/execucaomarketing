@@ -6,6 +6,7 @@ const statusConfig: Record<StatusGeral, { label: string; className: string }> = 
   "Em andamento": { label: "Em andamento", className: "bg-status-inprogress-bg text-status-inprogress" },
   "Revisão": { label: "Revisão", className: "bg-status-review-bg text-status-review" },
   "Pendente": { label: "Pendente", className: "bg-status-pending-bg text-status-pending" },
+  "Não definido": { label: "Não definido", className: "bg-status-undefined-bg text-status-undefined border border-border" },
 };
 
 export function StatusBadge({ status, size = "md" }: { status: StatusGeral; size?: "sm" | "md" }) {

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useEf
 import { initialDataRows } from "./initialRows";
 import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
-export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente";
+export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente" | "Não definido";
 
 export interface ClientRow {
   id: string;
@@ -177,6 +177,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       "Em andamento": 0.5,
       "Pendente": 0.25,
       "Atrasado": 0,
+      "Não definido": 0,
     };
     const weightedSum = cRows.reduce((acc, r) => acc + (STATUS_WEIGHT[r.statusGeral] ?? 0), 0);
     const totalEntregues = Math.round(weightedSum * 10) / 10; // exibido nos gráficos (com 1 casa)
@@ -373,7 +374,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const set = new Set(rows.map(r => r.responsavel).filter(Boolean));
     return Array.from(set).sort();
   }, [rows]);
-  const allStatuses: StatusGeral[] = ["Concluído", "Em andamento", "Revisão", "Pendente", "Atrasado"];
+  const allStatuses: StatusGeral[] = ["Concluído", "Em andamento", "Revisão", "Pendente", "Atrasado", "Não definido"];
 
   return (
     <DataContext.Provider value={{
