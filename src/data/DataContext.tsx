@@ -126,21 +126,11 @@ const initialColumns: ColumnDef[] = [
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
 
-/** Campos persistidos localmente como overrides (sobrevivem à sync da planilha). */
-type OverrideFields = Pick<ClientRow, "statusEntrega" | "statusGeral" | "autorizadoPor" | "observacoes">;
-type LocalOverrides = Record<string, Partial<OverrideFields>>;
-
-function overrideKey(r: Pick<ClientRow, "cliente" | "tipoConteudo" | "quantidadeContratada">) {
-  return `${r.cliente}||${r.tipoConteudo}||${r.quantidadeContratada}`;
-}
-
 interface DataContextType {
   rows: ClientRow[];
   columns: ColumnDef[];
   setRows: React.Dispatch<React.SetStateAction<ClientRow[]>>;
   updateRow: (id: string, updates: Partial<ClientRow>) => void;
-  /** Edita uma linha e persiste o override localmente (sobrevive à sync da planilha). */
-  editRowLocal: (id: string, updates: Partial<OverrideFields>) => void;
   updateRowCustom: (id: string, columnId: string, value: string) => void;
   addRow: () => void;
   deleteRow: (id: string) => void;
@@ -217,24 +207,6 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
 }
 
 const STORAGE_KEY = "execucao-marketing-data-v5";
-const OVERRIDES_KEY = "execucao-marketing-overrides-v1";
-
-function loadOverrides(): LocalOverrides {
-  try {
-    const raw = localStorage.getItem(OVERRIDES_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as LocalOverrides;
-  } catch {
-    return {};
-  }
-}
-
-function applyOverrides(rows: ClientRow[], overrides: LocalOverrides): ClientRow[] {
-  return rows.map(r => {
-    const o = overrides[overrideKey(r)];
-    return o ? { ...r, ...o } : r;
-  });
-}
 
 interface PersistedState {
   rows: ClientRow[];
@@ -289,19 +261,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [rows, columns]);
 
-  const [overrides, setOverrides] = useState<LocalOverrides>(() =>
-    typeof window !== "undefined" ? loadOverrides() : {}
-  );
-
-  // Persiste overrides
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
-    } catch (e) {
-      console.error("Falha ao salvar overrides:", e);
-    }
-  }, [overrides]);
-
   const syncNow = useCallback(async () => {
     setSyncStatus("syncing");
     setSyncError(null);
@@ -312,15 +271,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         throw new Error("A planilha foi lida mas está vazia.");
       }
       // Google Sheets é a fonte da verdade — substitui linhas pela versão remota.
-      // Preserva colunas customizadas por índice posicional e reaplica overrides locais.
-      setRows(prev => {
-        const merged: ClientRow[] = fetched.map((d, i) => ({
-          ...d,
-          id: genId(),
-          custom: prev[i]?.custom ?? {},
-        }));
-        return applyOverrides(merged, overrides);
-      });
+      // Preserva colunas customizadas por índice posicional.
+      setRows(prev => fetched.map((d, i) => ({
+        ...d,
+        id: genId(),
+        custom: prev[i]?.custom ?? {},
+      })));
       setLastSync(new Date());
       setSyncStatus("success");
     } catch (e) {
@@ -330,7 +286,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setSyncError(msg);
       setSyncStatus("error");
     }
-  }, [overrides]);
+  }, []);
+
+  // Polling: roda imediatamente e depois a cada 30s
   useEffect(() => {
     isMountedRef.current = true;
     syncNow();
@@ -343,17 +301,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateRow = useCallback((id: string, updates: Partial<ClientRow>) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
-  }, []);
-
-  const editRowLocal = useCallback((id: string, updates: Partial<OverrideFields>) => {
-    setRows(prev => {
-      const target = prev.find(r => r.id === id);
-      if (target) {
-        const key = overrideKey(target);
-        setOverrides(o => ({ ...o, [key]: { ...(o[key] || {}), ...updates } }));
-      }
-      return prev.map(r => r.id === id ? { ...r, ...updates } : r);
-    });
   }, []);
 
   const updateRowCustom = useCallback((id: string, columnId: string, value: string) => {
@@ -408,7 +355,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   return (
     <DataContext.Provider value={{
       rows, columns, setRows,
-      updateRow, editRowLocal, updateRowCustom, addRow, deleteRow,
+      updateRow, updateRowCustom, addRow, deleteRow,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
