@@ -126,11 +126,21 @@ const initialColumns: ColumnDef[] = [
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
 
+/** Campos persistidos localmente como overrides (sobrevivem à sync da planilha). */
+type OverrideFields = Pick<ClientRow, "statusEntrega" | "statusGeral" | "autorizadoPor" | "observacoes">;
+type LocalOverrides = Record<string, Partial<OverrideFields>>;
+
+function overrideKey(r: Pick<ClientRow, "cliente" | "tipoConteudo" | "quantidadeContratada">) {
+  return `${r.cliente}||${r.tipoConteudo}||${r.quantidadeContratada}`;
+}
+
 interface DataContextType {
   rows: ClientRow[];
   columns: ColumnDef[];
   setRows: React.Dispatch<React.SetStateAction<ClientRow[]>>;
   updateRow: (id: string, updates: Partial<ClientRow>) => void;
+  /** Edita uma linha e persiste o override localmente (sobrevive à sync da planilha). */
+  editRowLocal: (id: string, updates: Partial<OverrideFields>) => void;
   updateRowCustom: (id: string, columnId: string, value: string) => void;
   addRow: () => void;
   deleteRow: (id: string) => void;
