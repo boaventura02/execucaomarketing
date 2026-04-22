@@ -127,7 +127,7 @@ const initialColumns: ColumnDef[] = [
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
 
 /** Campos persistidos localmente como overrides (sobrevivem à sync da planilha). */
-type OverrideFields = Pick<ClientRow, "statusEntrega" | "statusGeral" | "autorizadoPor" | "observacoes">;
+type OverrideFields = Pick<ClientRow, "statusGeral" | "autorizadoPor" | "observacoes">;
 type LocalOverrides = Record<string, Partial<OverrideFields>>;
 
 function overrideKey(r: Pick<ClientRow, "cliente" | "tipoConteudo" | "quantidadeContratada">) {
