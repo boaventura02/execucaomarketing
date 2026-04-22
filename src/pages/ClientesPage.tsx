@@ -90,16 +90,20 @@ export default function ClientesPage() {
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                       Itens contratados ({c.items.length})
                     </h4>
-                    <div className="grid gap-2">
+                    <div className="grid gap-3">
                       {c.items.map(item => {
                         const fullRow = rows.find(r => r.id === item.rowId);
+                        const draft = obsDrafts[item.rowId];
+                        const currentObs = fullRow?.observacoes || "";
+                        const value = draft !== undefined ? draft : currentObs;
+                        const isDirty = draft !== undefined && draft !== currentObs;
                         return (
                           <div
                             key={item.rowId}
-                            className={`rounded-lg border border-border bg-card p-3 border-l-4 ${rowAccent(item.statusGeral)}`}
+                            className={`rounded-lg border border-border bg-card p-4 border-l-4 ${rowAccent(item.statusGeral)}`}
                           >
-                            <div className="flex items-center justify-between gap-3 flex-wrap">
-                              <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                              <div className="flex items-center gap-3 min-w-0 flex-wrap">
                                 <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold">
                                   {item.tipo || "—"}
                                 </span>
@@ -107,51 +111,46 @@ export default function ClientesPage() {
                                   <span className="text-muted-foreground">Qtd:</span>{" "}
                                   <span className="font-medium text-card-foreground">{item.quantidade || "—"}</span>
                                 </div>
+                                <div className="text-sm">
+                                  <span className="text-muted-foreground">Status Entrega:</span>{" "}
+                                  <span className="font-medium text-card-foreground">{fullRow?.statusEntrega || "—"}</span>
+                                </div>
                               </div>
                               <StatusBadge status={item.statusGeral} size="sm" />
                             </div>
 
-                            {fullRow && (
-                              <div className="mt-3 pt-3 border-t border-border/60 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs">
-                                <div>
-                                  <span className="text-muted-foreground">Status Entrega:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.statusEntrega || "—"}</span>
+                            <div>
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                                Observações
+                              </label>
+                              <Textarea
+                                value={value}
+                                onChange={e => setObsDrafts(p => ({ ...p, [item.rowId]: e.target.value }))}
+                                placeholder="Adicione observações sobre este item…"
+                                className="text-sm bg-background min-h-[70px]"
+                              />
+                              {isDirty && (
+                                <div className="flex justify-end gap-2 mt-2">
+                                  <button
+                                    onClick={() => setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; })}
+                                    className="px-3 py-1.5 text-xs rounded-md border border-border hover:bg-accent transition-colors"
+                                  >
+                                    Cancelar
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      updateRow(item.rowId, { observacoes: draft! });
+                                      setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; });
+                                      toast({ title: "Observação salva", description: `${item.tipo || "Item"} atualizado.` });
+                                    }}
+                                    className="px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 font-medium"
+                                  >
+                                    <Save className="w-3 h-3" />
+                                    Salvar
+                                  </button>
                                 </div>
-                                <div>
-                                  <span className="text-muted-foreground">Status Gravação:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.statusGravacao || "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Data Gravação:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.dataGravacao ? formatDate(fullRow.dataGravacao) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Entrega Prevista:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.dataEntregaPrevista ? formatDate(fullRow.dataEntregaPrevista) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Prazo Final:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.prazoFinal ? formatDate(fullRow.prazoFinal) : "—"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Autorizado por:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.autorizadoPor || "—"}</span>
-                                </div>
-                                {customColumns.map(cc => {
-                                  const v = getCellValue(fullRow, cc);
-                                  return (
-                                    <div key={cc.id}>
-                                      <span className="text-muted-foreground">{cc.label}:</span>{" "}
-                                      <span className="text-card-foreground">{v ? (cc.type === "date" ? formatDate(v) : v) : "—"}</span>
-                                    </div>
-                                  );
-                                })}
-                                <div className="col-span-2 md:col-span-4">
-                                  <span className="text-muted-foreground">Observações:</span>{" "}
-                                  <span className="text-card-foreground">{fullRow.observacoes || "—"}</span>
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         );
                       })}
