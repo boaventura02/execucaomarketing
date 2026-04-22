@@ -330,9 +330,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setSyncError(msg);
       setSyncStatus("error");
     }
-  }, []);
-
-  // Polling: roda imediatamente e depois a cada 30s
+  }, [overrides]);
   useEffect(() => {
     isMountedRef.current = true;
     syncNow();
