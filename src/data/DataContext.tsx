@@ -170,9 +170,17 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   return Array.from(grouped.entries()).map(([cliente, cRows]) => {
     const first = cRows[0];
     const totalItems = cRows.length;
-    // "Entregues" nos gráficos inclui Concluído, Pendente e Revisão (contam para a porcentagem)
-    const totalEntregues = cRows.filter(r => r.statusGeral === "Concluído" || r.statusGeral === "Pendente" || r.statusGeral === "Revisão").length;
-    const progresso = Math.round((totalEntregues / totalItems) * 100);
+    // Pesos por status: Concluído = 100%, Revisão = 75%, Em andamento = 50%, Pendente = 25%, Atrasado = 0%
+    const STATUS_WEIGHT: Record<StatusGeral, number> = {
+      "Concluído": 1,
+      "Revisão": 0.75,
+      "Em andamento": 0.5,
+      "Pendente": 0.25,
+      "Atrasado": 0,
+    };
+    const weightedSum = cRows.reduce((acc, r) => acc + (STATUS_WEIGHT[r.statusGeral] ?? 0), 0);
+    const totalEntregues = Math.round(weightedSum * 10) / 10; // exibido nos gráficos (com 1 casa)
+    const progresso = totalItems > 0 ? Math.round((weightedSum / totalItems) * 100) : 0;
 
     let status: StatusGeral;
     if (progresso === 100) {
