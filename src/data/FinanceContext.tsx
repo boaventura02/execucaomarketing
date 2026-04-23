@@ -1,0 +1,279 @@
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { useData } from "./DataContext";
+
+// Simple ID generator
+const genId = () => Math.random().toString(36).substring(2, 11);
+
+export type PaymentMethod = "Pix" | "Cartão crédito" | "Cartão débito" | "Boleto" | "Dinheiro" | "Permuta" | "Outro";
+export type TransactionType = "income" | "expense";
+export type ContractType = "monthly" | "unique";
+
+export interface FinancialAlert {
+  id: string;
+  type: "warning" | "danger" | "info";
+  message: string;
+  clientId?: string;
+}
+
+export interface ClientPaymentPart {
+  id: string;
+  method: PaymentMethod;
+  value: number;
+  notes?: string;
+}
+
+export interface ClientFinance {
+  clientId: string;
+  contractValue: number;
+  startDate: string;
+  endDate?: string;
+  paymentDay: number;
+  type: ContractType;
+  paymentParts: ClientPaymentPart[];
+}
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  category: string;
+  name: string;
+  date: string;
+  method: PaymentMethod;
+  value: number;
+  notes?: string;
+  document?: string;
+  phone?: string;
+}
+
+export interface FinancialCategory {
+  id: string;
+  name: string;
+}
+
+interface FinanceContextType {
+  clientFinances: ClientFinance[];
+  transactions: Transaction[];
+  categories: FinancialCategory[];
+  alerts: FinancialAlert[];
+  
+  // Actions for Client Finance
+  updateClientFinance: (clientId: string, data: Partial<ClientFinance>) => void;
+  addPaymentPart: (clientId: string, part: Omit<ClientPaymentPart, "id">) => void;
+  removePaymentPart: (clientId: string, partId: string) => void;
+  
+  // Actions for Transactions
+  addTransaction: (transaction: Omit<Transaction, "id">) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  deleteTransaction: (id: string) => void;
+  
+  // Actions for Categories
+  addCategory: (name: string) => void;
+  deleteCategory: (id: string) => void;
+  
+  // Dashboard Data
+  dashboardData: {
+    totalIncomes: number;
+    totalExpenses: number;
+    netProfit: number;
+    currentBalance: number;
+    toReceive: number;
+    alreadyPaid: number;
+  };
+}
+
+const FinanceContext = createContext<FinanceContextType | null>(null);
+
+const STORAGE_KEY = "marketing_finance_data";
+
+export function FinanceProvider({ children }: { children: React.ReactNode }) {
+  const { summaries } = useData();
+  
+  const [clientFinances, setClientFinances] = useState<ClientFinance[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<FinancialCategory[]>([
+    { id: "1", name: "Clientes" },
+    { id: "2", name: "Aluguel" },
+    { id: "3", name: "Lanches" },
+    { id: "4", name: "Ferramentas" },
+    { id: "5", name: "Tráfego Pago" },
+    { id: "6", name: "Outros" },
+  ]);
+
+  // Load from LocalStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.clientFinances) setClientFinances(parsed.clientFinances);
+        if (parsed.transactions) setTransactions(parsed.transactions);
+        if (parsed.categories) setCategories(parsed.categories);
+      } catch (e) {
+        console.error("Failed to parse finance data", e);
+      }
+    }
+  }, []);
+
+  // Save to LocalStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ clientFinances, transactions, categories }));
+  }, [clientFinances, transactions, categories]);
+
+  const updateClientFinance = (clientId: string, data: Partial<ClientFinance>) => {
+    setClientFinances(prev => {
+      const existing = prev.find(f => f.clientId === clientId);
+      if (existing) {
+        return prev.map(f => f.clientId === clientId ? { ...f, ...data } : f);
+      }
+      return [...prev, {
+        clientId,
+        contractValue: 0,
+        startDate: new Date().toISOString().split('T')[0],
+        paymentDay: 1,
+        type: 'monthly',
+        paymentParts: [],
+        ...data
+      } as ClientFinance];
+    });
+  };
+
+  const addPaymentPart = (clientId: string, part: Omit<ClientPaymentPart, "id">) => {
+    setClientFinances(prev => {
+      const existing = prev.find(f => f.clientId === clientId);
+      const newPart = { ...part, id: genId() };
+      if (existing) {
+        return prev.map(f => f.clientId === clientId ? { 
+          ...f, 
+          paymentParts: [...f.paymentParts, newPart] 
+        } : f);
+      }
+      return [...prev, {
+        clientId,
+        contractValue: 0,
+        startDate: new Date().toISOString().split('T')[0],
+        paymentDay: 1,
+        type: 'monthly',
+        paymentParts: [newPart]
+      } as ClientFinance];
+    });
+  };
+
+  const removePaymentPart = (clientId: string, partId: string) => {
+    setClientFinances(prev => prev.map(f => f.clientId === clientId ? {
+      ...f,
+      paymentParts: f.paymentParts.filter(p => p.id !== partId)
+    } : f));
+  };
+
+  const addTransaction = (transaction: Omit<Transaction, "id">) => {
+    setTransactions(prev => [{ ...transaction, id: genId() }, ...prev]);
+  };
+
+  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const deleteTransaction = (id: string) => {
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const addCategory = (name: string) => {
+    setCategories(prev => [...prev, { id: genId(), name }]);
+  };
+
+  const deleteCategory = (id: string) => {
+    setCategories(prev => prev.filter(c => c.id !== id));
+  };
+
+  const alerts = useMemo(() => {
+    const list: FinancialAlert[] = [];
+    const today = new Date();
+    
+    clientFinances.forEach(f => {
+      if (f.endDate) {
+        const end = new Date(f.endDate);
+        const diffDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+          list.push({ id: `end-${f.clientId}`, type: "danger", message: `Contrato de ${f.clientId} vencido!`, clientId: f.clientId });
+        } else if (diffDays <= 30) {
+          list.push({ id: `end-${f.clientId}`, type: "warning", message: `Contrato de ${f.clientId} vence em ${diffDays} dias.`, clientId: f.clientId });
+        }
+      }
+
+      const currentDay = today.getDate();
+      if (f.paymentDay === currentDay) {
+        list.push({ id: `pay-${f.clientId}`, type: "info", message: `Hoje é o dia de pagamento de ${f.clientId}.`, clientId: f.clientId });
+      } else if (f.paymentDay < currentDay) {
+        const thisMonth = today.getMonth();
+        const thisYear = today.getFullYear();
+        const hasPaid = transactions.some(t => 
+          t.type === "income" && 
+          t.category === "Clientes" && 
+          t.name.toLowerCase().includes(f.clientId.toLowerCase()) &&
+          new Date(t.date).getMonth() === thisMonth &&
+          new Date(t.date).getFullYear() === thisYear
+        );
+
+        if (!hasPaid) {
+          list.push({ id: `delay-${f.clientId}`, type: "warning", message: `Pagamento de ${f.clientId} (dia ${f.paymentDay}) atrasado este mês.`, clientId: f.clientId });
+        }
+      }
+    });
+
+    return list;
+  }, [clientFinances, transactions]);
+
+  const dashboardData = useMemo(() => {
+    const totalIncomes = transactions
+      .filter(t => t.type === "income")
+      .reduce((acc, t) => acc + t.value, 0);
+    
+    const totalExpenses = transactions
+      .filter(t => t.type === "expense")
+      .reduce((acc, t) => acc + t.value, 0);
+
+    const netProfit = totalIncomes - totalExpenses;
+    const currentBalance = netProfit;
+
+    const totalContracted = clientFinances.reduce((acc, f) => acc + f.contractValue, 0);
+    const clientPaymentsReceived = transactions
+      .filter(t => t.type === "income" && t.category === "Clientes")
+      .reduce((acc, t) => acc + t.value, 0);
+      
+    return {
+      totalIncomes,
+      totalExpenses,
+      netProfit,
+      currentBalance,
+      toReceive: Math.max(0, totalContracted - clientPaymentsReceived),
+      alreadyPaid: clientPaymentsReceived
+    };
+  }, [transactions, clientFinances]);
+
+  return (
+    <FinanceContext.Provider value={{
+      clientFinances,
+      transactions,
+      categories,
+      alerts,
+      updateClientFinance,
+      addPaymentPart,
+      removePaymentPart,
+      addTransaction,
+      updateTransaction,
+      deleteTransaction,
+      addCategory,
+      deleteCategory,
+      dashboardData
+    }}>
+      {children}
+    </FinanceContext.Provider>
+  );
+}
+
+export function useFinance() {
+  const context = useContext(FinanceContext);
+  if (!context) throw new Error("useFinance must be used within FinanceProvider");
+  return context;
+}
