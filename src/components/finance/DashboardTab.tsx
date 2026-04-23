@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFinance } from "@/data/FinanceContext";
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, DollarSign, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, PieChart, Pie } from "recharts";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function DashboardTab() {
-  const { dashboardData, transactions } = useFinance();
-  
+  const { dashboardData, transactions, alerts } = useFinance();
+
   // Data for Incomes vs Expenses Chart
   const last6Months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date();
