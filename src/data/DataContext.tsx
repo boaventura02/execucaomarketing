@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { initialDataRows } from "./initialRows";
+import { initialRows } from "./initialRows";
 import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
 export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente" | "Não definido";
@@ -56,54 +56,43 @@ export interface ColumnDef {
   width?: string;
 }
 
+// Finance types
+export type TransactionType = "entrada" | "saida";
+export type PaymentMethod = "Pix" | "Boleto" | "Cartão" | "Dinheiro" | "Outro";
+export type PaymentType = "Normal" | "Permuta" | "Outro";
+export type TransactionStatus = "Pago" | "Pendente";
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  value: number;
+  date: string;
+  category: string;
+  clientId?: string;
+  paymentMethod: PaymentMethod;
+  paymentType: PaymentType;
+  description: string;
+  status: TransactionStatus;
+}
+
+export interface FinanceCategory {
+  id: string;
+  name: string;
+  type: TransactionType;
+}
+
 let nextId = 1;
 function genId() { return String(nextId++); }
 let nextColId = 1;
 function genColId() { return `c${nextColId++}`; }
 
-const initialData: Omit<ClientRow, "id" | "custom">[] = initialDataRows.length > 0 ? (initialDataRows as Omit<ClientRow, "id" | "custom">[]) : [
-  { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Revisão", statusGeral: "Revisão", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 fotos", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1 Mês", statusEntrega: "Atrasado", statusGeral: "Atrasado", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "4", statusEntrega: "Atrasado", statusGeral: "Atrasado", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 fotos", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Pendente", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Pendente", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Espaço Crer e Desenvolver", dataFechamento: "2026-02-02", vencimentoContrato: "2026-05-02", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "9", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "TEK Telecom", dataFechamento: "2026-01-15", vencimentoContrato: "2026-06-15", responsavel: "Sarah", tipoConteudo: "Reels", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "TEK Telecom", dataFechamento: "2026-01-15", vencimentoContrato: "2026-06-15", responsavel: "Sarah", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "15", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/dia", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Danielle Cardoso - Center Clínica", dataFechamento: "2025-05-07", vencimentoContrato: "2025-11-07", responsavel: "Ketlyn", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Danielle Cardoso - Center Clínica", dataFechamento: "2025-05-07", vencimentoContrato: "2025-11-07", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "6/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Geovana Rodrigues", dataFechamento: "2026-01-06", vencimentoContrato: "2026-03-06", responsavel: "Sem responsável", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Geovana Rodrigues", dataFechamento: "2026-01-06", vencimentoContrato: "2026-03-06", responsavel: "Sem responsável", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
+const initialFinanceCategories: FinanceCategory[] = [
+  { id: "1", name: "Clientes", type: "entrada" },
+  { id: "2", name: "Tráfego Pago", type: "saida" },
+  { id: "3", name: "Ferramentas", type: "saida" },
+  { id: "4", name: "Salários", type: "saida" },
+  { id: "5", name: "Freelancers", type: "saida" },
+  { id: "6", name: "Outros", type: "saida" },
 ];
 
 /** Definição inicial das colunas (base = sempre presentes; podem ser renomeadas). */
@@ -148,6 +137,16 @@ interface DataContextType {
   syncError: string | null;
   syncNow: () => Promise<void>;
   sheetUrl: string;
+
+  // Finance module
+  transactions: Transaction[];
+  categories: FinanceCategory[];
+  addTransaction: (t: Omit<Transaction, "id">) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  deleteTransaction: (id: string) => void;
+  addCategory: (name: string, type: TransactionType) => void;
+  updateCategory: (id: string, name: string) => void;
+  deleteCategory: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -170,7 +169,6 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   return Array.from(grouped.entries()).map(([cliente, cRows]) => {
     const first = cRows[0];
     const totalItems = cRows.length;
-    // Pesos por status: Concluído = 100%, Revisão = 75%, Em andamento = 50%, Pendente = 25%, Atrasado = 0%
     const STATUS_WEIGHT: Record<StatusGeral, number> = {
       "Concluído": 1,
       "Revisão": 0.75,
@@ -180,7 +178,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       "Não definido": 0,
     };
     const weightedSum = cRows.reduce((acc, r) => acc + (STATUS_WEIGHT[r.statusGeral] ?? 0), 0);
-    const totalEntregues = Math.round(weightedSum * 10) / 10; // exibido nos gráficos (com 1 casa)
+    const totalEntregues = Math.round(weightedSum * 10) / 10;
     const progresso = totalItems > 0 ? Math.round((weightedSum / totalItems) * 100) : 0;
 
     let status: StatusGeral;
@@ -217,12 +215,18 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
 }
 
 const STORAGE_KEY = "execucao-marketing-data-v5";
+const STORAGE_KEY_FINANCE = "execucao-marketing-finance-v1";
 
 interface PersistedState {
   rows: ClientRow[];
   columns: ColumnDef[];
   nextId: number;
   nextColId: number;
+}
+
+interface PersistedFinanceState {
+  transactions: Transaction[];
+  categories: FinanceCategory[];
 }
 
 function loadPersisted(): PersistedState | null {
@@ -237,16 +241,28 @@ function loadPersisted(): PersistedState | null {
   }
 }
 
+function loadPersistedFinance(): PersistedFinanceState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_FINANCE);
+    if (!raw) return null;
+    return JSON.parse(raw) as PersistedFinanceState;
+  } catch {
+    return null;
+  }
+}
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const persisted = typeof window !== "undefined" ? loadPersisted() : null;
+  const persistedFinance = typeof window !== "undefined" ? loadPersistedFinance() : null;
 
   const [rows, setRows] = useState<ClientRow[]>(() => {
     if (persisted) {
       nextId = persisted.nextId;
       return persisted.rows;
     }
-    return initialData.map(d => ({ ...d, id: genId(), custom: {} }));
+    return initialRows.map(d => ({ ...d, id: genId(), custom: {}, statusGeral: (d.statusGeral as StatusGeral) || "Pendente" }));
   });
+
   const [columns, setColumns] = useState<ColumnDef[]>(() => {
     if (persisted) {
       nextColId = persisted.nextColId;
@@ -255,14 +271,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return initialColumns;
   });
 
-  // Sincronização com Google Sheets
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
-  const [lastSync, setLastSync] = useState<Date | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
-  const isMountedRef = useRef(true);
+  // Finance state
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    return persistedFinance?.transactions || [];
+  });
+  const [categories, setCategories] = useState<FinanceCategory[]>(() => {
+    return persistedFinance?.categories || initialFinanceCategories;
+  });
 
   // Persiste mudanças no localStorage
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const state: PersistedState = { rows, columns, nextId, nextColId };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -270,6 +288,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error("Falha ao salvar no localStorage:", e);
     }
   }, [rows, columns]);
+
+  useEffect(() => {
+    try {
+      const financeState: PersistedFinanceState = { transactions, categories };
+      localStorage.setItem(STORAGE_KEY_FINANCE, JSON.stringify(financeState));
+    } catch (e) {
+      console.error("Falha ao salvar financeiro no localStorage:", e);
+    }
+  }, [transactions, categories]);
+
+  // Sincronização com Google Sheets
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
   const syncNow = useCallback(async () => {
     setSyncStatus("syncing");
@@ -280,9 +313,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (fetched.length === 0) {
         throw new Error("A planilha foi lida mas está vazia.");
       }
-      // Google Sheets é a fonte da verdade para a maioria dos campos,
-      // MAS preservamos `observacoes` e `custom` editados localmente,
-      // indexando por (cliente | tipoConteudo | quantidadeContratada).
       setRows(prev => {
         const localByKey = new Map<string, ClientRow>();
         prev.forEach(r => {
@@ -294,9 +324,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           const local = localByKey.get(key);
           return {
             ...d,
-            // Observações são SEMPRE preservadas localmente (a planilha não as gerencia).
+            statusGeral: (d.statusGeral as StatusGeral) || "Pendente",
             observacoes: local?.observacoes || d.observacoes || "",
-            id: genId(),
+            id: local?.id || genId(),
             custom: local?.custom ?? prev[i]?.custom ?? {},
           };
         });
@@ -312,11 +342,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Polling: roda imediatamente e depois a cada 30s
   useEffect(() => {
     isMountedRef.current = true;
     syncNow();
-    const interval = setInterval(syncNow, 10_000);
+    const interval = setInterval(syncNow, 30_000);
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
@@ -369,6 +398,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return (row[col.id as keyof ClientRow] as string) ?? "";
   }, []);
 
+  // Finance methods
+  const addTransaction = useCallback((t: Omit<Transaction, "id">) => {
+    setTransactions(prev => [{ ...t, id: Date.now().toString() }, ...prev]);
+  }, []);
+
+  const updateTransaction = useCallback((id: string, updates: Partial<Transaction>) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  }, []);
+
+  const deleteTransaction = useCallback((id: string) => {
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const addCategory = useCallback((name: string, type: TransactionType) => {
+    setCategories(prev => [...prev, { id: Date.now().toString(), name, type }]);
+  }, []);
+
+  const updateCategory = useCallback((id: string, name: string) => {
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, name } : c));
+  }, []);
+
+  const deleteCategory = useCallback((id: string) => {
+    setCategories(prev => prev.filter(c => c.id !== id));
+  }, []);
+
   const summaries = useMemo(() => computeSummaries(rows), [rows]);
   const allResponsaveis = useMemo(() => {
     const set = new Set(rows.map(r => r.responsavel).filter(Boolean));
@@ -383,6 +437,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
+      transactions, categories,
+      addTransaction, updateTransaction, deleteTransaction,
+      addCategory, updateCategory, deleteCategory,
     }}>
       {children}
     </DataContext.Provider>
