@@ -69,8 +69,14 @@ export default function FinanceiroPage() {
   const revenue = useMemo(() => filteredTransactions.filter(t => t.type === "entrada").reduce((acc, t) => acc + t.value, 0), [filteredTransactions]);
   const expenses = useMemo(() => filteredTransactions.filter(t => t.type === "saida").reduce((acc, t) => acc + t.value, 0), [filteredTransactions]);
   const profit = revenue - expenses;
+  
+  const totalRevenue = useMemo(() => transactions.filter(t => t.type === "entrada").reduce((acc, t) => acc + t.value, 0), [transactions]);
+  const totalExpenses = useMemo(() => transactions.filter(t => t.type === "saida").reduce((acc, t) => acc + t.value, 0), [transactions]);
+  const balance = totalRevenue - totalExpenses;
+
   const toReceive = useMemo(() => transactions.filter(t => t.type === "entrada" && t.status === "Pendente").reduce((acc, t) => acc + t.value, 0), [transactions]);
   const toPay = useMemo(() => transactions.filter(t => t.type === "saida" && t.status === "Pendente").reduce((acc, t) => acc + t.value, 0), [transactions]);
+
 
   // Chart Data
   const chartData = useMemo(() => {
