@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { useData } from "./DataContext";
-import { v4 as uuidv4 } from "uuid";
 
-// Since uuid isn't in package.json, I'll use a simple generator
+// Simple ID generator
 const genId = () => Math.random().toString(36).substring(2, 11);
 
 export type PaymentMethod = "Pix" | "Cartão crédito" | "Cartão débito" | "Boleto" | "Dinheiro" | "Permuta" | "Outro";
