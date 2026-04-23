@@ -158,7 +158,7 @@ export default function ApresentacaoPage() {
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Apresentação</h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">Resumo executivo dos contratos e entregas</p>
           </div>
-          <Button onClick={() => setIsPresentationMode(true)} className="gap-2 min-h-[44px] w-full sm:w-auto">
+          <Button onClick={() => setIsPresentationMode(true)} className="gap-2 min-h-[44px] w-full sm:w-auto hidden md:flex">
             <Play className="w-4 h-4" />
             Iniciar Modo TV
           </Button>
