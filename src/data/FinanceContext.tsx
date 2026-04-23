@@ -8,6 +8,13 @@ export type PaymentMethod = "Pix" | "Cartão crédito" | "Cartão débito" | "Bo
 export type TransactionType = "income" | "expense";
 export type ContractType = "monthly" | "unique";
 
+export interface FinancialAlert {
+  id: string;
+  type: "warning" | "danger" | "info";
+  message: string;
+  clientId?: string;
+}
+
 export interface ClientPaymentPart {
   id: string;
   method: PaymentMethod;
