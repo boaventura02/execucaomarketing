@@ -32,6 +32,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
   const totalClientes = summaries.length;
   const totalContratado = summaries.reduce((s, c) => s + c.totalItems, 0);
   const totalEntregues = summaries.reduce((s, c) => s + c.totalEntregues, 0);
+  const totalEntreguesPercent = totalContratado > 0 ? Math.round((totalEntregues / totalContratado) * 100) : 0;
   const totalPendentes = totalContratado - totalEntregues;
   const atrasadosCount = summaries.filter(c => c.status === "Atrasado").length;
 
