@@ -218,7 +218,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <KPISlideCard title="Total de Clientes" value={totalClientes} icon={Users} color="text-primary" />
-                  <KPISlideCard title="Total de Entregues" value={totalEntregues} icon={CheckCircle2} color="text-green-500" />
+                  <KPISlideCard title="Total de Entregues (%)" value={`${totalEntreguesPercent}%`} icon={CheckCircle2} color="text-green-500" />
                   <KPISlideCard title="Total de Pendentes" value={totalPendentes} icon={Clock} color="text-yellow-500" />
                   <KPISlideCard title="Total de Atrasados" value={atrasadosCount} icon={AlertTriangle} color="text-red-500" />
                 </div>
