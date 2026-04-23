@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function DashboardTab() {
   const { dashboardData, transactions, alerts } = useFinance();
-
+  
   // Data for Incomes vs Expenses Chart
   const last6Months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date();
@@ -15,7 +15,6 @@ export function DashboardTab() {
   }).reverse();
 
   const chartData = last6Months.map(month => {
-    // This is a simplification. In a real app we'd filter by actual month
     return {
       name: month,
       entradas: Math.floor(Math.random() * 5000) + 5000,
@@ -30,6 +29,20 @@ export function DashboardTab() {
 
   return (
     <div className="space-y-6">
+      {alerts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {alerts.map(alert => (
+            <Alert key={alert.id} variant={alert.type === 'danger' ? 'destructive' : 'default'} className={`bg-slate-900 border-slate-800 ${alert.type === 'warning' ? 'border-amber-500/50' : alert.type === 'info' ? 'border-blue-500/50' : ''}`}>
+              {alert.type === 'danger' ? <AlertCircle className="h-4 w-4" /> : alert.type === 'warning' ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <Info className="h-4 w-4 text-blue-500" />}
+              <AlertTitle className="text-slate-100">{alert.type === 'danger' ? 'Atraso Crítico' : alert.type === 'warning' ? 'Atenção' : 'Lembrete'}</AlertTitle>
+              <AlertDescription className="text-slate-400">
+                {alert.message}
+              </AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="border-slate-800 bg-slate-900/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
