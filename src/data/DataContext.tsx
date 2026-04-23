@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { initialDataRows } from "./initialRows";
+import { initialRows } from "./initialRows";
 import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
 export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente" | "Não definido";
@@ -95,13 +95,22 @@ const initialFinanceCategories: FinanceCategory[] = [
   { id: "6", name: "Outros", type: "saida" },
 ];
 
-const initialData: Omit<ClientRow, "id" | "custom">[] = initialDataRows.length > 0 ? (initialDataRows as Omit<ClientRow, "id" | "custom">[]) : [
-...
-];
-
 /** Definição inicial das colunas (base = sempre presentes; podem ser renomeadas). */
 const initialColumns: ColumnDef[] = [
-...
+  { id: "cliente", kind: "base", label: "Cliente", type: "text", width: "180px" },
+  { id: "dataFechamento", kind: "base", label: "Fechamento", type: "date", width: "120px" },
+  { id: "vencimentoContrato", kind: "base", label: "Vencimento", type: "date", width: "120px" },
+  { id: "responsavel", kind: "base", label: "Responsável", type: "text", width: "140px" },
+  { id: "tipoConteudo", kind: "base", label: "Tipo Conteúdo", type: "text", width: "140px" },
+  { id: "quantidadeContratada", kind: "base", label: "Qtd. Contratada", type: "text", width: "120px" },
+  { id: "dataGravacao", kind: "base", label: "Data Gravação", type: "date", width: "120px" },
+  { id: "statusGravacao", kind: "base", label: "Status Gravação", type: "text", width: "130px" },
+  { id: "dataEntregaPrevista", kind: "base", label: "Entrega Prevista", type: "date", width: "120px" },
+  { id: "autorizadoPor", kind: "base", label: "Autorizado por", type: "select", width: "130px" },
+  { id: "statusEntrega", kind: "base", label: "Status Entrega", type: "text", width: "130px" },
+  { id: "prazoFinal", kind: "base", label: "Prazo Final", type: "date", width: "120px" },
+  { id: "statusGeral", kind: "base", label: "Status Geral", type: "select", width: "140px" },
+  { id: "observacoes", kind: "base", label: "Observações", type: "text", width: "180px" },
 ];
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
@@ -128,7 +137,7 @@ interface DataContextType {
   syncError: string | null;
   syncNow: () => Promise<void>;
   sheetUrl: string;
-  
+
   // Finance module
   transactions: Transaction[];
   categories: FinanceCategory[];
@@ -141,7 +150,6 @@ interface DataContextType {
 }
 
 const DataContext = createContext<DataContextType | null>(null);
-
 
 export function useData() {
   const ctx = useContext(DataContext);
@@ -161,7 +169,6 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   return Array.from(grouped.entries()).map(([cliente, cRows]) => {
     const first = cRows[0];
     const totalItems = cRows.length;
-    // Pesos por status: Concluído = 100%, Revisão = 75%, Em andamento = 50%, Pendente = 25%, Atrasado = 0%
     const STATUS_WEIGHT: Record<StatusGeral, number> = {
       "Concluído": 1,
       "Revisão": 0.75,
@@ -171,7 +178,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       "Não definido": 0,
     };
     const weightedSum = cRows.reduce((acc, r) => acc + (STATUS_WEIGHT[r.statusGeral] ?? 0), 0);
-    const totalEntregues = Math.round(weightedSum * 10) / 10; // exibido nos gráficos (com 1 casa)
+    const totalEntregues = Math.round(weightedSum * 10) / 10;
     const progresso = totalItems > 0 ? Math.round((weightedSum / totalItems) * 100) : 0;
 
     let status: StatusGeral;
@@ -208,12 +215,18 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
 }
 
 const STORAGE_KEY = "execucao-marketing-data-v5";
+const STORAGE_KEY_FINANCE = "execucao-marketing-finance-v1";
 
 interface PersistedState {
   rows: ClientRow[];
   columns: ColumnDef[];
   nextId: number;
   nextColId: number;
+}
+
+interface PersistedFinanceState {
+  transactions: Transaction[];
+  categories: FinanceCategory[];
 }
 
 function loadPersisted(): PersistedState | null {
@@ -228,16 +241,28 @@ function loadPersisted(): PersistedState | null {
   }
 }
 
+function loadPersistedFinance(): PersistedFinanceState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_FINANCE);
+    if (!raw) return null;
+    return JSON.parse(raw) as PersistedFinanceState;
+  } catch {
+    return null;
+  }
+}
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const persisted = typeof window !== "undefined" ? loadPersisted() : null;
+  const persistedFinance = typeof window !== "undefined" ? loadPersistedFinance() : null;
 
   const [rows, setRows] = useState<ClientRow[]>(() => {
     if (persisted) {
       nextId = persisted.nextId;
       return persisted.rows;
     }
-    return initialData.map(d => ({ ...d, id: genId(), custom: {} }));
+    return initialRows.map(d => ({ ...d, id: genId(), custom: {}, statusGeral: (d.statusGeral as StatusGeral) || "Pendente" }));
   });
+
   const [columns, setColumns] = useState<ColumnDef[]>(() => {
     if (persisted) {
       nextColId = persisted.nextColId;
@@ -246,14 +271,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return initialColumns;
   });
 
-  // Sincronização com Google Sheets
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
-  const [lastSync, setLastSync] = useState<Date | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
-  const isMountedRef = useRef(true);
+  // Finance state
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    return persistedFinance?.transactions || [];
+  });
+  const [categories, setCategories] = useState<FinanceCategory[]>(() => {
+    return persistedFinance?.categories || initialFinanceCategories;
+  });
 
   // Persiste mudanças no localStorage
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const state: PersistedState = { rows, columns, nextId, nextColId };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -261,6 +288,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error("Falha ao salvar no localStorage:", e);
     }
   }, [rows, columns]);
+
+  useEffect(() => {
+    try {
+      const financeState: PersistedFinanceState = { transactions, categories };
+      localStorage.setItem(STORAGE_KEY_FINANCE, JSON.stringify(financeState));
+    } catch (e) {
+      console.error("Falha ao salvar financeiro no localStorage:", e);
+    }
+  }, [transactions, categories]);
+
+  // Sincronização com Google Sheets
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
   const syncNow = useCallback(async () => {
     setSyncStatus("syncing");
@@ -271,9 +313,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (fetched.length === 0) {
         throw new Error("A planilha foi lida mas está vazia.");
       }
-      // Google Sheets é a fonte da verdade para a maioria dos campos,
-      // MAS preservamos `observacoes` e `custom` editados localmente,
-      // indexando por (cliente | tipoConteudo | quantidadeContratada).
       setRows(prev => {
         const localByKey = new Map<string, ClientRow>();
         prev.forEach(r => {
@@ -285,9 +324,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           const local = localByKey.get(key);
           return {
             ...d,
-            // Observações são SEMPRE preservadas localmente (a planilha não as gerencia).
+            statusGeral: (d.statusGeral as StatusGeral) || "Pendente",
             observacoes: local?.observacoes || d.observacoes || "",
-            id: genId(),
+            id: local?.id || genId(),
             custom: local?.custom ?? prev[i]?.custom ?? {},
           };
         });
@@ -303,11 +342,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Polling: roda imediatamente e depois a cada 30s
   useEffect(() => {
     isMountedRef.current = true;
     syncNow();
-    const interval = setInterval(syncNow, 10_000);
+    const interval = setInterval(syncNow, 30_000);
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
@@ -360,6 +398,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return (row[col.id as keyof ClientRow] as string) ?? "";
   }, []);
 
+  // Finance methods
+  const addTransaction = useCallback((t: Omit<Transaction, "id">) => {
+    setTransactions(prev => [{ ...t, id: Date.now().toString() }, ...prev]);
+  }, []);
+
+  const updateTransaction = useCallback((id: string, updates: Partial<Transaction>) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  }, []);
+
+  const deleteTransaction = useCallback((id: string) => {
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const addCategory = useCallback((name: string, type: TransactionType) => {
+    setCategories(prev => [...prev, { id: Date.now().toString(), name, type }]);
+  }, []);
+
+  const updateCategory = useCallback((id: string, name: string) => {
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, name } : c));
+  }, []);
+
+  const deleteCategory = useCallback((id: string) => {
+    setCategories(prev => prev.filter(c => c.id !== id));
+  }, []);
+
   const summaries = useMemo(() => computeSummaries(rows), [rows]);
   const allResponsaveis = useMemo(() => {
     const set = new Set(rows.map(r => r.responsavel).filter(Boolean));
@@ -374,6 +437,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
+      transactions, categories,
+      addTransaction, updateTransaction, deleteTransaction,
+      addCategory, updateCategory, deleteCategory,
     }}>
       {children}
     </DataContext.Provider>
