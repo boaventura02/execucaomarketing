@@ -99,6 +99,18 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 10% 12%;
     --sidebar-ring: 0 0% 98%;
+
+    /* Status colors para modo escuro */
+    --status-delivered: 142 70% 50%;
+    --status-delivered-bg: 142 70% 10%;
+    --status-pending: 45 90% 50%;
+    --status-pending-bg: 45 90% 10%;
+    --status-late: 0 84% 60%;
+    --status-late-bg: 0 84% 10%;
+    --status-review: 215 80% 60%;
+    --status-review-bg: 215 80% 10%;
+    --status-inprogress: 280 60% 60%;
+    --status-inprogress-bg: 280 60% 10%;
   }
 }
 

@@ -160,24 +160,24 @@ export default function FinanceiroPage() {
               <Card className="bg-card/50 border-border/50">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-amber-500" />
+                    <AlertCircle className="w-5 h-5 text-status-pending" />
                     Alertas Financeiros
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-rose-500/5 border border-rose-500/10">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-status-late-bg/20 border border-status-late/20">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-rose-500" />
+                      <div className="w-2 h-2 rounded-full bg-status-late" />
                       <span className="text-sm font-medium">Fatura Atrasada: Aires Contabilidade</span>
                     </div>
-                    <span className="text-sm font-bold text-rose-500">{formatCurrency(3200)}</span>
+                    <span className="text-sm font-bold text-status-late">{formatCurrency(3200)}</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-status-pending-bg/20 border border-status-pending/20">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-amber-500" />
+                      <div className="w-2 h-2 rounded-full bg-status-pending" />
                       <span className="text-sm font-medium">Vence amanhã: Adobe Creative Cloud</span>
                     </div>
-                    <span className="text-sm font-bold text-amber-500">{formatCurrency(250)}</span>
+                    <span className="text-sm font-bold text-status-pending">{formatCurrency(250)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -337,7 +337,7 @@ export default function FinanceiroPage() {
                   </div>
                   <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
                     <p className="text-xs text-muted-foreground uppercase">Resultado do Mês</p>
-                    <p className="text-xl font-bold text-emerald-500">+{formatCurrency(3500)}</p>
+                    <p className="text-xl font-bold text-status-delivered">+{formatCurrency(3500)}</p>
                   </div>
                   <div className="p-4 rounded-xl bg-primary text-primary-foreground border border-primary/50">
                     <p className="text-xs opacity-80 uppercase">Saldo Acumulado</p>
