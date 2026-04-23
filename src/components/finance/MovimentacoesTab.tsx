@@ -217,7 +217,7 @@ function TransactionModal() {
     // Form will reset naturally when dialog closes or we could reset state here
   };
 
-  const paymentMethods: PaymentMethod[] = ["Pix", "Cartão crédito", "Cartão debitó", "Boleto", "Dinheiro", "Permuta", "Outro"];
+  const paymentMethods: PaymentMethod[] = ["Pix", "Cartão crédito", "Cartão débito", "Boleto", "Dinheiro", "Permuta", "Outro"];
 
   return (
     <DialogContent className="sm:max-w-[500px] bg-slate-900 border-slate-800 text-slate-100">
