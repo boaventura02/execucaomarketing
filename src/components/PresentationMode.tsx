@@ -28,6 +28,45 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Data Calculations
+  const totalClientes = summaries.length;
+  const totalContratado = summaries.reduce((s, c) => s + c.totalItems, 0);
+  const totalEntregues = summaries.reduce((s, c) => s + c.totalEntregues, 0);
+  const totalPendentes = totalContratado - totalEntregues;
+  const atrasadosCount = summaries.filter(c => c.status === "Atrasado").length;
+
+  const porResponsavel = useMemo(() => {
+    const map = new Map<string, { 
+      responsavel: string; 
+      clientes: number; 
+      contratado: number; 
+      entregue: number; 
+      pendentes: number; 
+      atrasados: number 
+    }>();
+    
+    summaries.forEach(c => {
+      const key = c.responsavel || "Sem responsável";
+      if (!map.has(key)) {
+        map.set(key, { responsavel: key, clientes: 0, contratado: 0, entregue: 0, pendentes: 0, atrasados: 0 });
+      }
+      const r = map.get(key)!;
+      r.clientes += 1;
+      r.contratado += c.totalItems;
+      r.entregue += c.totalEntregues;
+      r.pendentes += (c.totalItems - c.totalEntregues);
+      if (c.status === "Atrasado") r.atrasados += 1;
+    });
+    
+    return Array.from(map.values()).sort((a, b) => b.entregue - a.entregue);
+  }, [summaries]);
+
+  const statusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    summaries.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [summaries]);
+
   // Priority ranking — clients that require the most attention based on STATUS
   const allPrioridade = useMemo(() => {
     const statusWeight: Record<string, number> = {
@@ -111,144 +150,52 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onExit, totalSlides]);
 
-  // Data Calculations
-  const totalClientes = summaries.length;
-  const totalContratado = summaries.reduce((s, c) => s + c.totalItems, 0);
-  const totalEntregues = summaries.reduce((s, c) => s + c.totalEntregues, 0);
-  const totalPendentes = totalContratado - totalEntregues;
-  const atrasadosCount = summaries.filter(c => c.status === "Atrasado").length;
-
-  const porResponsavel = useMemo(() => {
-    const map = new Map<string, { 
-      responsavel: string; 
-      clientes: number; 
-      contratado: number; 
-      entregue: number; 
-      pendentes: number; 
-      atrasados: number 
-    }>();
-    
-    summaries.forEach(c => {
-      const key = c.responsavel || "Sem responsável";
-      if (!map.has(key)) {
-        map.set(key, { responsavel: key, clientes: 0, contratado: 0, entregue: 0, pendentes: 0, atrasados: 0 });
-      }
-      const r = map.get(key)!;
-      r.clientes += 1;
-      r.contratado += c.totalItems;
-      r.entregue += c.totalEntregues;
-      r.pendentes += (c.totalItems - c.totalEntregues);
-      if (c.status === "Atrasado") r.atrasados += 1;
-    });
-    
-    return Array.from(map.values()).sort((a, b) => b.entregue - a.entregue);
-  }, [summaries]);
-
-  const productionData = useMemo(() => {
-    const data = [
-      { name: "Stories", entregue: 0, contratado: 0 },
-      { name: "Reels", entregue: 0, contratado: 0 },
-    ];
-    
-    rows.forEach(r => {
-      const tipo = r.tipoConteudo.toLowerCase();
-      const qtd = parseInt(r.quantidadeContratada) || 0;
-      const entregue = r.statusGeral === "Concluído" ? qtd : 0;
-      
-      if (tipo.includes("story") || tipo.includes("stories")) {
-        data[0].contratado += qtd;
-        data[0].entregue += entregue;
-      } else if (tipo.includes("reel")) {
-        data[1].contratado += qtd;
-        data[1].entregue += entregue;
-      }
-    });
-    return data;
-  }, [rows]);
-
-  const statusData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    summaries.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [summaries]);
-
-  // Removed old priority logic as it is now handled by clientsChunks
-
-
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0
-    })
-  };
-
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground">
-      {/* Top Controls (always visible & interactive) */}
-      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-wrap justify-end gap-1.5 sm:gap-2 z-[110] max-w-[calc(100%-1rem)]">
+      {/* Top Controls */}
+      <div className="absolute top-4 right-4 flex gap-2 z-[110]">
         <button
           onClick={onExit}
-          title="Voltar para o site"
-          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 min-h-[40px] bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
         >
-          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider hidden sm:inline">Voltar ao site</span>
-          <span className="text-xs font-bold uppercase tracking-wider sm:hidden">Voltar</span>
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
         </button>
         <button
           onClick={() => setIsPaused((p) => !p)}
-          title={isPaused ? "Retomar apresentação" : "Pausar este slide"}
-          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 min-h-[40px] border shadow-lg rounded-full transition-all hover:scale-105 active:scale-95 ${
-            isPaused
-              ? "bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600 animate-pulse"
-              : "bg-card border-border hover:bg-muted"
+          className={`flex items-center gap-2 px-4 py-2 border shadow-lg rounded-full transition-all ${
+            isPaused ? "bg-yellow-500 text-white border-yellow-600 animate-pulse" : "bg-card border-border hover:bg-muted"
           }`}
         >
-          {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
-          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider hidden sm:inline">
-            {isPaused ? "Pausado" : "Pausar slide"}
-          </span>
+          {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+          <span className="text-sm font-bold uppercase tracking-wider">{isPaused ? "Pausado" : "Pausar"}</span>
         </button>
         <button
           onClick={toggleFullscreen}
-          title={isFullscreen ? "Sair tela cheia" : "Tela cheia"}
-          className="hidden sm:inline-flex p-2.5 min-h-[40px] min-w-[40px] items-center justify-center bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all hover:scale-105 active:scale-95"
+          className="p-2.5 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
         >
           {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
         </button>
         <button
           onClick={onExit}
-          title="Fechar apresentação (ESC)"
-          className="p-2 sm:p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all hover:scale-105 active:scale-95"
+          className="p-2.5 bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all"
         >
-          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Side Navigation Arrows */}
+      {/* Side Navigation */}
       <button
         onClick={() => setCurrentSlide((p) => (p - 1 + totalSlides) % totalSlides)}
-        title="Slide anterior"
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-[110] p-2 sm:p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
       >
-        <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7" />
+        <ChevronLeft className="w-7 h-7" />
       </button>
       <button
         onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)}
-        title="Próximo slide"
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-[110] p-2 sm:p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted hover:scale-110 active:scale-95 transition-all backdrop-blur-sm"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
       >
-        <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7" />
+        <ChevronRight className="w-7 h-7" />
       </button>
 
       <div className="flex-1 relative">
@@ -259,31 +206,34 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 p-4 sm:p-8 lg:p-16 pt-16 sm:pt-20 flex flex-col justify-center overflow-y-auto"
+            className="absolute inset-0 p-8 lg:p-16 pt-20 flex flex-col justify-center overflow-y-auto"
           >
-            {/* Slide 1: Visão Geral */}
+            {/* Slide 1: Resumo Geral */}
             {currentSlide === 0 && (
               <div className="space-y-12">
                 <header className="text-center">
-                  <h1 className="text-5xl lg:text-7xl font-serif font-bold mb-4">Visão Geral</h1>
-                  <p className="text-2xl text-muted-foreground">Resumo Executivo em Tempo Real</p>
+                  <h1 className="text-5xl lg:text-7xl font-serif font-bold mb-4">Resumo Geral</h1>
+                  <p className="text-2xl text-muted-foreground">Status Executivo da Operação</p>
                 </header>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <KPISlideCard title="Total de Clientes" value={totalClientes} icon={Users} color="text-primary" />
-                  <KPISlideCard title="Conteúdos Contratados" value={totalContratado} icon={TrendingUp} color="text-primary" />
-                  <KPISlideCard title="Conteúdos Entregues" value={totalEntregues} icon={CheckCircle2} color="text-green-500" />
-                  <KPISlideCard title="Pendências" value={totalPendentes} icon={Clock} color="text-yellow-500" />
-                  <KPISlideCard title="Clientes em Atraso" value={atrasadosCount} icon={AlertTriangle} color="text-red-500" />
-                  <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl flex flex-col items-center justify-center">
+                  <KPISlideCard title="Total de Entregues" value={totalEntregues} icon={CheckCircle2} color="text-green-500" />
+                  <KPISlideCard title="Total de Pendentes" value={totalPendentes} icon={Clock} color="text-yellow-500" />
+                  <KPISlideCard title="Total de Atrasados" value={atrasadosCount} icon={AlertTriangle} color="text-red-500" />
+                </div>
+                <div className="flex justify-center">
+                  <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl flex flex-col items-center justify-center w-full max-w-2xl">
                     <h3 className="text-2xl font-bold mb-4">Status Geral</h3>
-                    <div className="w-full h-48">
+                    <div className="w-full h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                          <Pie data={statusData} cx="50%" cy="50%" innerRadius={80} outerRadius={100} paddingAngle={5} dataKey="value">
                             {statusData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || "#8884d8"} />
                             ))}
                           </Pie>
+                          <Tooltip />
+                          <Legend wrapperStyle={{ fontSize: '18px', fontWeight: 'bold' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
@@ -292,146 +242,53 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 2: Performance por Responsável */}
+            {/* Slide 2: Performance por Responsável (%) */}
             {currentSlide === 1 && (
               <div className="space-y-8 h-full flex flex-col">
                 <header className="text-center">
                   <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Performance por Responsável</h1>
-                  <p className="text-xl text-muted-foreground">Entregas e Clientes por Membro da Equipe</p>
+                  <p className="text-xl text-muted-foreground">Eficiência de Entrega em Porcentagem (%)</p>
                 </header>
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl h-[500px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={porResponsavel} layout="vertical" margin={{ left: 100, right: 30 }}>
-                        <XAxis type="number" hide />
+                      <BarChart 
+                        data={porResponsavel.map(r => ({ 
+                          ...r, 
+                          percent: r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0 
+                        }))} 
+                        layout="vertical" 
+                        margin={{ left: 100, right: 30 }}
+                      >
+                        <XAxis type="number" domain={[0, 100]} tickFormatter={(val) => `${val}%`} />
                         <YAxis 
                           dataKey="responsavel" 
                           type="category" 
                           tick={{ fontSize: 18, fontWeight: 'bold' }} 
                           width={120}
                         />
-                        <Tooltip />
-                        <Bar dataKey="entregue" fill="#22c55e" radius={[0, 4, 4, 0]} name="Entregues" />
-                        <Bar dataKey="pendentes" fill="#eab308" radius={[0, 4, 4, 0]} name="Pendentes" />
+                        <Tooltip formatter={(value) => [`${value}%`, "Performance"]} />
+                        <Bar dataKey="percent" fill="#22c55e" radius={[0, 4, 4, 0]} name="Performance (%)" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="space-y-4 overflow-auto max-h-[600px] pr-4">
-                    {porResponsavel.map((r, i) => (
-                      <div key={r.responsavel} className="bg-card p-6 rounded-2xl border border-border flex items-center justify-between shadow-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                            {i + 1}
-                          </div>
-                          <div>
-                            <h3 className="text-2xl font-bold">{r.responsavel}</h3>
-                            <p className="text-muted-foreground">{r.clientes} clientes ativos</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-green-500">{r.entregue}</div>
-                          <div className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">Entregas</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Slide 3: Status Geral dos Clientes */}
-            {currentSlide === 2 && (
-              <div className="space-y-8 h-full flex flex-col">
-                <header className="text-center">
-                  <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Status dos Clientes</h1>
-                  <p className="text-xl text-muted-foreground">Monitoramento Geral de Saúde dos Contratos</p>
-                </header>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-hidden p-2">
-                  {summaries.slice(0, 12).map((c) => (
-                    <div key={c.cliente} className={`p-6 rounded-3xl border-2 shadow-xl bg-card flex flex-col justify-between transition-all ${
-                      c.status === "Atrasado" ? "border-red-500/50" : 
-                      c.status === "Concluído" ? "border-green-500/50" : "border-border"
-                    }`}>
-                      <div>
-                        <div className="flex justify-between items-start mb-4">
-                          <h3 className="text-xl font-bold leading-tight">{c.cliente}</h3>
-                          <StatusBadge status={c.status} />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Progresso</span>
-                            <span className="font-bold">{c.progresso}%</span>
-                          </div>
-                          <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full transition-all duration-1000 ${
-                                c.progresso === 100 ? "bg-green-500" : 
-                                c.status === "Atrasado" ? "bg-red-500" : "bg-primary"
-                              }`}
-                              style={{ width: `${c.progresso}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-6 flex justify-between items-end">
-                        <div>
-                          <p className="text-[10px] uppercase text-muted-foreground font-bold">Responsável</p>
-                          <p className="font-semibold">{c.responsavel}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] uppercase text-muted-foreground font-bold">Entrega</p>
-                          <p className="font-bold text-lg">{c.totalEntregues}/{c.totalItems}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {summaries.length > 12 && (
-                    <div className="flex items-center justify-center text-muted-foreground italic">
-                      + {summaries.length - 12} outros clientes...
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Slide 4: Produção por Tipo de Conteúdo */}
-            {currentSlide === 3 && (
-              <div className="space-y-12 h-full flex flex-col">
-                <header className="text-center">
-                  <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Produção por Tipo</h1>
-                  <p className="text-xl text-muted-foreground">Stories vs Reels: Desempenho de Produção</p>
-                </header>
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  <div className="bg-card rounded-3xl p-12 border border-border shadow-2xl h-[500px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={productionData}>
-                        <XAxis dataKey="name" tick={{ fontSize: 24, fontWeight: 'bold' }} />
-                        <YAxis tick={{ fontSize: 18 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: 20, paddingTop: 20 }} />
-                        <Bar dataKey="contratado" fill="hsl(var(--primary))" name="Contratado" radius={[10, 10, 0, 0]} />
-                        <Bar dataKey="entregue" fill="#22c55e" name="Entregue" radius={[10, 10, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="space-y-8">
-                    {productionData.map(item => {
-                      const perc = item.contratado > 0 ? Math.round((item.entregue / item.contratado) * 100) : 0;
+                    {porResponsavel.map((r, i) => {
+                      const perc = r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0;
                       return (
-                        <div key={item.name} className="bg-card p-10 rounded-3xl border border-border shadow-2xl">
-                          <h3 className="text-4xl font-bold mb-6 flex justify-between items-center">
-                            {item.name}
-                            <span className="text-primary">{perc}%</span>
-                          </h3>
-                          <div className="grid grid-cols-2 gap-8 text-center">
-                            <div>
-                              <p className="text-sm uppercase text-muted-foreground font-bold mb-2">Entregues</p>
-                              <p className="text-6xl font-bold text-green-500">{item.entregue}</p>
+                        <div key={r.responsavel} className="bg-card p-6 rounded-2xl border border-border flex items-center justify-between shadow-lg">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+                              {i + 1}
                             </div>
                             <div>
-                              <p className="text-sm uppercase text-muted-foreground font-bold mb-2">Restantes</p>
-                              <p className="text-6xl font-bold text-yellow-500">{item.contratado - item.entregue}</p>
+                              <h3 className="text-2xl font-bold">{r.responsavel}</h3>
+                              <p className="text-muted-foreground">{r.clientes} clientes ativos</p>
                             </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-4xl font-black text-green-500">{perc}%</div>
+                            <div className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">Eficiência</div>
                           </div>
                         </div>
                       );
@@ -441,8 +298,8 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 5: Clientes que Requerem Maior Atenção */}
-            {currentSlide === 4 && (
+            {/* Slides 3+: Clientes que Requerem Maior Atenção (Dinâmico) */}
+            {currentSlide >= 2 && (
               <div className="space-y-8 h-full flex flex-col bg-red-500/5 -m-8 lg:-m-16 p-8 lg:p-16">
                 <header className="text-center">
                   <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
@@ -451,56 +308,49 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                     <AlertTriangle className="w-14 h-14 animate-pulse" />
                   </h1>
                   <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
-                    Ranking por Prioridade de Status
+                    Página {currentSlide - 1} de {clientsChunks.length}
                   </p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
-                  {clientesPrioridade.length === 0 ? (
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden">
+                  {clientsChunks[currentSlide - 2]?.length === 0 ? (
                     <div className="lg:col-span-2 flex items-center justify-center">
                       <div className="bg-green-100 dark:bg-green-950/30 p-16 rounded-3xl border-4 border-green-500 text-center">
                         <CheckCircle2 className="w-24 h-24 text-green-600 mx-auto mb-6" />
                         <h3 className="text-4xl font-bold text-green-800 dark:text-green-300">
-                          Tudo em dia! Nenhum cliente requer atenção.
+                          Tudo em dia! Nenhum cliente requer atenção nesta página.
                         </h3>
                       </div>
                     </div>
                   ) : (
-                    clientesPrioridade.map((c, idx) => {
+                    clientsChunks[currentSlide - 2]?.map((c, idx) => {
                       const isAtrasado = c.status === "Atrasado";
-                      const borderColor = isAtrasado
-                        ? "border-red-500"
-                        : c.status === "Pendente"
-                        ? "border-yellow-500"
-                        : "border-orange-500";
-                      const textColor = isAtrasado
-                        ? "text-red-600"
-                        : c.status === "Pendente"
-                        ? "text-yellow-600"
-                        : "text-orange-600";
+                      const borderColor = isAtrasado ? "border-red-500" : c.status === "Pendente" ? "border-yellow-500" : "border-orange-500";
+                      const textColor = isAtrasado ? "text-red-600" : c.status === "Pendente" ? "text-yellow-600" : "text-orange-600";
                       const bgRank = isAtrasado ? "bg-red-600" : c.status === "Pendente" ? "bg-yellow-600" : "bg-orange-600";
+                      
                       return (
                         <div
                           key={c.cliente}
-                          className={`bg-card p-5 rounded-2xl border-4 ${borderColor} shadow-2xl flex items-center gap-5`}
+                          className={`bg-card p-8 rounded-3xl border-4 ${borderColor} shadow-2xl flex items-center gap-8`}
                         >
-                          <div className={`w-14 h-14 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-2xl shadow-lg`}>
-                            {idx + 1}
+                          <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
+                            {((currentSlide - 2) * 4) + idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className={`text-2xl font-black truncate ${textColor}`}>{c.cliente}</h3>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
+                            <div className="flex items-center gap-3 mt-2 flex-wrap">
                               <StatusBadge status={c.status} />
-                              <span className="text-sm font-bold text-muted-foreground truncate">
+                              <span className="text-lg font-bold text-muted-foreground truncate">
                                 {c.responsavel}
                               </span>
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className={`text-3xl font-black ${textColor}`}>{c.pendentes}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <div className={`text-5xl font-black ${textColor}`}>{c.pendentes}</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                               Pendências
                             </div>
-                            <div className="text-xs font-bold mt-1">{c.progresso}% concluído</div>
+                            <div className="text-sm font-bold mt-2">{c.progresso}% concluído</div>
                           </div>
                         </div>
                       );
@@ -524,7 +374,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
         />
       </div>
 
-      {/* Footer / Slide Indicator */}
+      {/* Footer */}
       <footer className="h-20 border-t border-border flex items-center justify-between px-12 bg-card/50 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <img src={logo} alt="Logo" className="h-10 opacity-50" />
