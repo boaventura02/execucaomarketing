@@ -56,72 +56,52 @@ export interface ColumnDef {
   width?: string;
 }
 
+// Finance types
+export type TransactionType = "entrada" | "saida";
+export type PaymentMethod = "Pix" | "Boleto" | "Cartão" | "Dinheiro" | "Outro";
+export type PaymentType = "Normal" | "Permuta" | "Outro";
+export type TransactionStatus = "Pago" | "Pendente";
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  value: number;
+  date: string;
+  category: string;
+  clientId?: string;
+  paymentMethod: PaymentMethod;
+  paymentType: PaymentType;
+  description: string;
+  status: TransactionStatus;
+}
+
+export interface FinanceCategory {
+  id: string;
+  name: string;
+  type: TransactionType;
+}
+
 let nextId = 1;
 function genId() { return String(nextId++); }
 let nextColId = 1;
 function genColId() { return `c${nextColId++}`; }
 
+const initialFinanceCategories: FinanceCategory[] = [
+  { id: "1", name: "Clientes", type: "entrada" },
+  { id: "2", name: "Tráfego Pago", type: "saida" },
+  { id: "3", name: "Ferramentas", type: "saida" },
+  { id: "4", name: "Salários", type: "saida" },
+  { id: "5", name: "Freelancers", type: "saida" },
+  { id: "6", name: "Outros", type: "saida" },
+];
+
 const initialData: Omit<ClientRow, "id" | "custom">[] = initialDataRows.length > 0 ? (initialDataRows as Omit<ClientRow, "id" | "custom">[]) : [
-  { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Revisão", statusGeral: "Revisão", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "La Barca Gastronomia", dataFechamento: "2026-04-14", vencimentoContrato: "2026-07-14", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 fotos", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Em edição", statusGeral: "Em andamento", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Aires Contabilidade", dataFechamento: "", vencimentoContrato: "", responsavel: "Sem responsável", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1 Mês", statusEntrega: "Atrasado", statusGeral: "Atrasado", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "4", statusEntrega: "Atrasado", statusGeral: "Atrasado", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Amis Store", dataFechamento: "2026-04-27", vencimentoContrato: "2026-08-27", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Mayra Ferreira Torquato", dataFechamento: "2026-04-10", vencimentoContrato: "2026-07-10", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "10 fotos", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Pendente", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Expo Catalão - Sindicato Rural", dataFechamento: "2026-01-10", vencimentoContrato: "2026-06-10", responsavel: "Bruna", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Pendente", statusGeral: "Pendente", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Espaço Crer e Desenvolver", dataFechamento: "2026-02-02", vencimentoContrato: "2026-05-02", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "9", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Dra. Monica Marinho", dataFechamento: "2026-04-01", vencimentoContrato: "2026-07-01", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Janayne Louza", dataFechamento: "2026-03-25", vencimentoContrato: "2026-09-25", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "TEK Telecom", dataFechamento: "2026-01-15", vencimentoContrato: "2026-06-15", responsavel: "Sarah", tipoConteudo: "Reels", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "TEK Telecom", dataFechamento: "2026-01-15", vencimentoContrato: "2026-06-15", responsavel: "Sarah", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "15", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/dia", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "R2 - Ricardo Borges", dataFechamento: "2026-02-01", vencimentoContrato: "2026-06-01", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "6", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Storys", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Alana Rodrigues", dataFechamento: "2025-11-11", vencimentoContrato: "2026-04-10", responsavel: "Maria Fernanda", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Danielle Cardoso - Center Clínica", dataFechamento: "2025-05-07", vencimentoContrato: "2025-11-07", responsavel: "Ketlyn", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Danielle Cardoso - Center Clínica", dataFechamento: "2025-05-07", vencimentoContrato: "2025-11-07", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Gravação Presencial", quantidadeContratada: "1/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Reels", quantidadeContratada: "2/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Uzze Multimarcas - Aniely", dataFechamento: "2026-04-14", vencimentoContrato: "2026-10-14", responsavel: "Ketlyn", tipoConteudo: "Feed", quantidadeContratada: "6/semana", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Reels", quantidadeContratada: "4", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Agromec Catalão", dataFechamento: "2026-01-05", vencimentoContrato: "2026-04-05", responsavel: "Maria Fernanda", tipoConteudo: "Feed", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Geovana Rodrigues", dataFechamento: "2026-01-06", vencimentoContrato: "2026-03-06", responsavel: "Sem responsável", tipoConteudo: "Reels", quantidadeContratada: "8", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
-  { cliente: "Geovana Rodrigues", dataFechamento: "2026-01-06", vencimentoContrato: "2026-03-06", responsavel: "Sem responsável", tipoConteudo: "Tráfego", quantidadeContratada: "1", statusEntrega: "Entregue", statusGeral: "Concluído", dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "", prazoFinal: "", observacoes: "" },
+...
 ];
 
 /** Definição inicial das colunas (base = sempre presentes; podem ser renomeadas). */
 const initialColumns: ColumnDef[] = [
-  { id: "cliente", kind: "base", label: "Cliente", type: "text", width: "180px" },
-  { id: "dataFechamento", kind: "base", label: "Fechamento", type: "date", width: "120px" },
-  { id: "vencimentoContrato", kind: "base", label: "Vencimento", type: "date", width: "120px" },
-  { id: "responsavel", kind: "base", label: "Responsável", type: "text", width: "140px" },
-  { id: "tipoConteudo", kind: "base", label: "Tipo Conteúdo", type: "text", width: "140px" },
-  { id: "quantidadeContratada", kind: "base", label: "Qtd. Contratada", type: "text", width: "120px" },
-  { id: "dataGravacao", kind: "base", label: "Data Gravação", type: "date", width: "120px" },
-  { id: "statusGravacao", kind: "base", label: "Status Gravação", type: "text", width: "130px" },
-  { id: "dataEntregaPrevista", kind: "base", label: "Entrega Prevista", type: "date", width: "120px" },
-  { id: "autorizadoPor", kind: "base", label: "Autorizado por", type: "select", width: "130px" },
-  { id: "statusEntrega", kind: "base", label: "Status Entrega", type: "text", width: "130px" },
-  { id: "prazoFinal", kind: "base", label: "Prazo Final", type: "date", width: "120px" },
-  { id: "statusGeral", kind: "base", label: "Status Geral", type: "select", width: "140px" },
-  { id: "observacoes", kind: "base", label: "Observações", type: "text", width: "180px" },
+...
 ];
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
@@ -148,9 +128,20 @@ interface DataContextType {
   syncError: string | null;
   syncNow: () => Promise<void>;
   sheetUrl: string;
+  
+  // Finance module
+  transactions: Transaction[];
+  categories: FinanceCategory[];
+  addTransaction: (t: Omit<Transaction, "id">) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  deleteTransaction: (id: string) => void;
+  addCategory: (name: string, type: TransactionType) => void;
+  updateCategory: (id: string, name: string) => void;
+  deleteCategory: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
+
 
 export function useData() {
   const ctx = useContext(DataContext);
