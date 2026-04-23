@@ -104,15 +104,17 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { syncError, syncStatus } = useData();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const isFinance = location.pathname.startsWith("/financeiro");
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={`flex flex-col min-h-screen transition-colors duration-500 ${isFinance ? "dark bg-slate-950 text-slate-50" : "bg-background text-foreground"}`}>
       {/* Top header */}
-      <header className="w-full bg-sidebar border-b border-sidebar-border px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex items-center gap-3 sm:gap-6 lg:gap-8">
+      <header className={`w-full border-b px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex items-center gap-3 sm:gap-6 lg:gap-8 transition-colors ${isFinance ? "bg-slate-900/50 border-slate-800" : "bg-sidebar border-sidebar-border"}`}>
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileOpen(true)}
-          className="md:hidden flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg border border-sidebar-border bg-background text-foreground hover:bg-sidebar-accent transition-colors"
+          className={`md:hidden flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg border transition-colors ${isFinance ? "border-slate-800 bg-slate-900 text-slate-100 hover:bg-slate-800" : "border-sidebar-border bg-background text-foreground hover:bg-sidebar-accent"}`}
           aria-label="Abrir menu"
         >
           <Menu className="w-5 h-5" />
@@ -122,10 +124,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain drop-shadow-xl" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-tight truncate">
+          <h1 className={`text-lg sm:text-2xl md:text-3xl lg:text-5xl font-serif font-bold italic tracking-tight leading-tight truncate ${isFinance ? "text-slate-50" : "text-foreground"}`}>
             Execução Marketing
           </h1>
-          <p className="hidden sm:block text-xs sm:text-sm md:text-base text-sidebar-foreground opacity-80 mt-1 sm:mt-2">Painel de gestão de entregas</p>
+          <p className={`hidden sm:block text-xs sm:text-sm md:text-base mt-1 sm:mt-2 opacity-80 ${isFinance ? "text-slate-400" : "text-sidebar-foreground"}`}>
+            {isFinance ? "Módulo Financeiro" : "Painel de gestão de entregas"}
+          </p>
         </div>
       </header>
 
@@ -138,7 +142,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex w-60 bg-sidebar flex-shrink-0 flex-col border-r border-sidebar-border relative overflow-hidden">
+        <aside className={`hidden md:flex w-60 flex-shrink-0 flex-col border-r relative overflow-hidden transition-colors ${isFinance ? "bg-slate-900 border-slate-800" : "bg-sidebar border-sidebar-border"}`}>
           <div className="absolute inset-y-0 left-0 w-full pointer-events-none select-none opacity-[0.08] z-0">
             <img src={logo} alt="" className="h-full w-full object-contain" />
           </div>
@@ -152,7 +156,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
-            <aside className="relative w-64 max-w-[85vw] bg-sidebar flex flex-col border-r border-sidebar-border shadow-xl animate-in slide-in-from-left duration-200">
+            <aside className={`relative w-64 max-w-[85vw] flex flex-col border-r shadow-xl animate-in slide-in-from-left duration-200 transition-colors ${isFinance ? "bg-slate-900 border-slate-800" : "bg-sidebar border-sidebar-border"}`}>
               <div className="absolute inset-y-0 left-0 w-full pointer-events-none select-none opacity-[0.08] z-0">
                 <img src={logo} alt="" className="h-full w-full object-contain" />
               </div>
