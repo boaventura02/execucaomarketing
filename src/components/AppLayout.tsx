@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X, DollarSign } from "lucide-react";
 import { useData } from "@/data/DataContext";
 import logo from "@/assets/logo.png";
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/planilha", label: "Planilha", icon: Table2 },
   { to: "/apresentacao", label: "Apresentação", icon: Presentation },
+  { to: "/financeiro", label: "Financeiro", icon: DollarSign },
 ];
 
 function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
@@ -104,8 +105,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { syncError, syncStatus } = useData();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const location = useLocation();
+  const isFinanceiro = location.pathname === "/financeiro";
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={`flex flex-col min-h-screen ${isFinanceiro ? "financeiro-theme" : ""}`}>
       {/* Top header */}
       <header className="w-full bg-sidebar border-b border-sidebar-border px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex items-center gap-3 sm:gap-6 lg:gap-8">
         {/* Mobile menu button */}
