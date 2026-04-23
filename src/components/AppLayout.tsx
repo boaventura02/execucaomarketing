@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X, Wallet } from "lucide-react";
 import { useData } from "@/data/DataContext";
 import logo from "@/assets/logo.png";
 
@@ -9,7 +9,9 @@ const navItems = [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/planilha", label: "Planilha", icon: Table2 },
   { to: "/apresentacao", label: "Apresentação", icon: Presentation },
+  { to: "/financeiro", label: "Financeiro", icon: Wallet },
 ];
+
 
 function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
   const { syncStatus, lastSync, syncError, syncNow, sheetUrl } = useData();
