@@ -28,7 +28,35 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const totalSlides = 5;
+  // Priority ranking — clients that require the most attention based on STATUS
+  const allPrioridade = useMemo(() => {
+    const statusWeight: Record<string, number> = {
+      "Atrasado": 100,
+      "Pendente": 60,
+      "Revisão": 40,
+      "Em andamento": 20,
+      "Concluído": 0,
+    };
+    return [...summaries]
+      .map(c => {
+        const pendentes = c.totalItems - c.totalEntregues;
+        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso);
+        return { ...c, pendentes, score };
+      })
+      .filter(c => c.status !== "Concluído")
+      .sort((a, b) => b.score - a.score);
+  }, [summaries]);
+
+  // Max 4 clients per slide
+  const clientsChunks = useMemo(() => {
+    const chunks = [];
+    for (let i = 0; i < allPrioridade.length; i += 4) {
+      chunks.push(allPrioridade.slice(i, i + 4));
+    }
+    return chunks.length > 0 ? chunks : [[]];
+  }, [allPrioridade]);
+
+  const totalSlides = 2 + clientsChunks.length;
 
   // Handle Fullscreen
   const toggleFullscreen = useCallback(() => {
