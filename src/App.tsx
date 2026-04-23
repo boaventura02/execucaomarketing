@@ -9,6 +9,7 @@ import ClientesPage from "./pages/ClientesPage.tsx";
 import PlanilhaPage from "./pages/PlanilhaPage.tsx";
 import ApresentacaoPage from "./pages/ApresentacaoPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import FinanceiroPage from "./pages/FinanceiroPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/clientes" element={<ClientesPage />} />
             <Route path="/planilha" element={<PlanilhaPage />} />
             <Route path="/apresentacao" element={<ApresentacaoPage />} />
+            <Route path="/financeiro" element={<FinanceiroPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
@@ -31,5 +33,6 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
+
 
 export default App;
