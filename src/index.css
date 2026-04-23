@@ -61,6 +61,46 @@
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 0 0% 0%;
   }
+
+  .financeiro-theme {
+    --background: 240 10% 4%;           /* Quase preto */
+    --foreground: 0 0% 98%;            /* Quase branco */
+
+    --card: 240 10% 7%;                /* Cinza bem escuro */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;               /* Branco como destaque */
+    --primary-foreground: 240 10% 4%;
+
+    --secondary: 240 10% 12%;          /* Cinza escuro */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 10% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 10% 15%;
+    --input: 240 10% 15%;
+    --ring: 0 0% 98%;
+
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 240 5% 85%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 10% 4%;
+    --sidebar-accent: 240 10% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 10% 12%;
+    --sidebar-ring: 0 0% 98%;
+  }
+}
 }
 
 @layer base {
