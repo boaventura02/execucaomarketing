@@ -23,7 +23,7 @@ export interface ClientPaymentPart {
 }
 
 export interface ClientFinance {
-  clientId: string; // references ClientRow.cliente (or id if it's stable)
+  clientId: string;
   contractValue: number;
   startDate: string;
   endDate?: string;
@@ -41,7 +41,7 @@ export interface Transaction {
   method: PaymentMethod;
   value: number;
   notes?: string;
-  document?: string; // CPF/CNPJ
+  document?: string;
   phone?: string;
 }
 
@@ -54,6 +54,7 @@ interface FinanceContextType {
   clientFinances: ClientFinance[];
   transactions: Transaction[];
   categories: FinancialCategory[];
+  alerts: FinancialAlert[];
   
   // Actions for Client Finance
   updateClientFinance: (clientId: string, data: Partial<ClientFinance>) => void;
@@ -85,7 +86,7 @@ const FinanceContext = createContext<FinanceContextType | null>(null);
 const STORAGE_KEY = "marketing_finance_data";
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
-  const { summaries } = useData(); // We'll use summaries to get unique client names
+  const { summaries } = useData();
   
   const [clientFinances, setClientFinances] = useState<ClientFinance[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -184,6 +185,45 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setCategories(prev => prev.filter(c => c.id !== id));
   };
 
+  const alerts = useMemo(() => {
+    const list: FinancialAlert[] = [];
+    const today = new Date();
+    
+    clientFinances.forEach(f => {
+      if (f.endDate) {
+        const end = new Date(f.endDate);
+        const diffDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+          list.push({ id: `end-${f.clientId}`, type: "danger", message: `Contrato de ${f.clientId} vencido!`, clientId: f.clientId });
+        } else if (diffDays <= 30) {
+          list.push({ id: `end-${f.clientId}`, type: "warning", message: `Contrato de ${f.clientId} vence em ${diffDays} dias.`, clientId: f.clientId });
+        }
+      }
+
+      const currentDay = today.getDate();
+      if (f.paymentDay === currentDay) {
+        list.push({ id: `pay-${f.clientId}`, type: "info", message: `Hoje é o dia de pagamento de ${f.clientId}.`, clientId: f.clientId });
+      } else if (f.paymentDay < currentDay) {
+        const thisMonth = today.getMonth();
+        const thisYear = today.getFullYear();
+        const hasPaid = transactions.some(t => 
+          t.type === "income" && 
+          t.category === "Clientes" && 
+          t.name.toLowerCase().includes(f.clientId.toLowerCase()) &&
+          new Date(t.date).getMonth() === thisMonth &&
+          new Date(t.date).getFullYear() === thisYear
+        );
+
+        if (!hasPaid) {
+          list.push({ id: `delay-${f.clientId}`, type: "warning", message: `Pagamento de ${f.clientId} (dia ${f.paymentDay}) atrasado este mês.`, clientId: f.clientId });
+        }
+      }
+    });
+
+    return list;
+  }, [clientFinances, transactions]);
+
   const dashboardData = useMemo(() => {
     const totalIncomes = transactions
       .filter(t => t.type === "income")
@@ -194,10 +234,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       .reduce((acc, t) => acc + t.value, 0);
 
     const netProfit = totalIncomes - totalExpenses;
-    const currentBalance = netProfit; // Simplified
+    const currentBalance = netProfit;
 
-    // These would typically come from specific client payment tracking
-    // For now, let's assume "toReceive" is sum of all contracts minus income transactions categorized as "Clientes"
     const totalContracted = clientFinances.reduce((acc, f) => acc + f.contractValue, 0);
     const clientPaymentsReceived = transactions
       .filter(t => t.type === "income" && t.category === "Clientes")
@@ -218,6 +256,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       clientFinances,
       transactions,
       categories,
+      alerts,
       updateClientFinance,
       addPaymentPart,
       removePaymentPart,
