@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X, DollarSign } from "lucide-react";
 import { useData } from "@/data/DataContext";
 import logo from "@/assets/logo.png";
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/planilha", label: "Planilha", icon: Table2 },
   { to: "/apresentacao", label: "Apresentação", icon: Presentation },
+  { to: "/financeiro", label: "Financeiro", icon: DollarSign },
 ];
 
 function SyncIndicator({ isSidebar = false }: { isSidebar?: boolean }) {
@@ -104,8 +105,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { syncError, syncStatus } = useData();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const location = useLocation();
+  const isFinanceiro = location.pathname === "/financeiro";
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={`flex flex-col min-h-screen ${isFinanceiro ? "financeiro-theme" : ""}`}>
       {/* Top header */}
       <header className="w-full bg-sidebar border-b border-sidebar-border px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex items-center gap-3 sm:gap-6 lg:gap-8">
         {/* Mobile menu button */}
@@ -118,7 +122,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </button>
 
         <div className="h-12 sm:h-16 md:h-20 lg:h-32 flex items-center justify-center flex-shrink-0">
-          <img src={logo} alt="Execução Marketing" className="h-full w-auto object-contain drop-shadow-xl" />
+          <img 
+            src={logo} 
+            alt="Execução Marketing" 
+            className={`h-full w-auto object-contain drop-shadow-xl transition-all ${isFinanceiro ? "brightness-0 invert" : ""}`} 
+          />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
           <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-5xl font-serif font-bold italic tracking-tight text-foreground leading-tight truncate">
@@ -139,7 +147,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-60 bg-sidebar flex-shrink-0 flex-col border-r border-sidebar-border relative overflow-hidden">
           <div className="absolute inset-y-0 left-0 w-full pointer-events-none select-none opacity-[0.08] z-0">
-            <img src={logo} alt="" className="h-full w-full object-contain" />
+            <img 
+              src={logo} 
+              alt="" 
+              className={`h-full w-full object-contain ${isFinanceiro ? "brightness-0 invert" : ""}`} 
+            />
           </div>
           <SidebarNav />
         </aside>
@@ -153,7 +165,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             />
             <aside className="relative w-64 max-w-[85vw] bg-sidebar flex flex-col border-r border-sidebar-border shadow-xl animate-in slide-in-from-left duration-200">
               <div className="absolute inset-y-0 left-0 w-full pointer-events-none select-none opacity-[0.08] z-0">
-                <img src={logo} alt="" className="h-full w-full object-contain" />
+                <img 
+                  src={logo} 
+                  alt="" 
+                  className={`h-full w-full object-contain ${isFinanceiro ? "brightness-0 invert" : ""}`} 
+                />
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -170,7 +186,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Main */}
         <main className="flex-1 overflow-auto relative min-w-0">
           <div className="absolute inset-0 pointer-events-none select-none opacity-[0.04] z-0 flex items-center justify-center">
-            <img src={logo} alt="" className="max-h-[80%] max-w-[60%] object-contain" />
+            <img 
+              src={logo} 
+              alt="" 
+              className={`max-h-[80%] max-w-[60%] object-contain ${isFinanceiro ? "brightness-0 invert" : ""}`} 
+            />
           </div>
           <div className="relative z-10">
             {children}
