@@ -42,7 +42,7 @@ function CellInput({
           onChange={e => onUpdate(e.target.value)}
           className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer hover:bg-white/50"
         >
-          {AUTORIZADO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "Selecionar..."}</option>)}
+          {APROVADO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "Selecionar..."}</option>)}
         </select>
       );
     }
