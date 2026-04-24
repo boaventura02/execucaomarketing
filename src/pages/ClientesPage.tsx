@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check } from "lucide-react";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
@@ -22,12 +23,21 @@ function rowAccent(status: StatusGeral) {
 }
 
 export default function ClientesPage() {
+  const [searchParams] = useSearchParams();
+  const initialCliente = searchParams.get("cliente") || "";
+  
   const { summaries, allResponsaveis, allStatuses, rows, updateRow } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [filterCliente, setFilterCliente] = useState("");
+  const [filterCliente, setFilterCliente] = useState(initialCliente);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [obsDrafts, setObsDrafts] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (initialCliente) {
+      setExpanded(p => ({ ...p, [initialCliente]: true }));
+    }
+  }, [initialCliente]);
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
