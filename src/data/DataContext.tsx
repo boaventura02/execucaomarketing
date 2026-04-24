@@ -168,7 +168,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
     grouped.set(row.cliente, existing);
   });
 
-  return Array.from(grouped.entries()).map(([cliente, cRows]) => {
+  const summariesList = Array.from(grouped.entries()).map(([cliente, cRows]) => {
     const first = cRows[0];
     const totalItems = cRows.length;
     // Pesos por status: Concluído = 100%, Revisão = 75%, Em andamento = 50%, Pendente = 25%, Atrasado = 0%
@@ -215,6 +215,22 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       status,
       aprovadoPor: first.autorizadoPor || "",
     };
+  });
+
+  const statusOrder: Record<string, number> = {
+    "Concluído": 1,
+    "Em andamento": 2,
+    "Revisão": 3,
+    "Pendente": 4,
+    "Atrasado": 5,
+    "Não definido": 6
+  };
+
+  return summariesList.sort((a, b) => {
+    const orderA = statusOrder[a.status] || 10;
+    const orderB = statusOrder[b.status] || 10;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.cliente.localeCompare(b.cliente, "pt-BR");
   });
 }
 
