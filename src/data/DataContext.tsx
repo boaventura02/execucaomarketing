@@ -213,6 +213,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       totalEntregues,
       progresso,
       status,
+      aprovadoPor: first.autorizadoPor || "",
     };
   });
 }
