@@ -22,26 +22,11 @@ export default function Dashboard() {
   const [filterCliente, setFilterCliente] = useState("");
 
   const filtered = useMemo(() => {
-    const list = summaries.filter(c => {
+    return summaries.filter(c => {
       if (filterResp && c.responsavel !== filterResp) return false;
       if (filterStatus && c.status !== filterStatus) return false;
       if (filterCliente && !c.cliente.toLowerCase().includes(filterCliente.toLowerCase())) return false;
       return true;
-    });
-
-    const statusOrder: Record<string, number> = {
-      "Concluído": 1,
-      "Em andamento": 2,
-      "Revisão": 3,
-      "Pendente": 4,
-      "Atrasado": 5
-    };
-
-    return [...list].sort((a, b) => {
-      const orderA = statusOrder[a.status] || 10;
-      const orderB = statusOrder[b.status] || 10;
-      if (orderA !== orderB) return orderA - orderB;
-      return a.cliente.localeCompare(b.cliente);
     });
   }, [summaries, filterResp, filterStatus, filterCliente]);
 
