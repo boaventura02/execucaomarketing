@@ -129,7 +129,17 @@ export default function Dashboard() {
           <div className="bg-card rounded-xl p-4 sm:p-5 border border-border shadow-sm">
             <h3 className="text-sm font-semibold text-card-foreground mb-4">Contratado vs Entregue</h3>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={deliveryData} margin={{ left: -10, right: 10 }}>
+              <BarChart 
+                data={deliveryData} 
+                margin={{ left: -10, right: 10 }}
+                onClick={(data) => {
+                  if (data && data.activePayload && data.activePayload.length > 0) {
+                    const clientName = filtered[data.activeTooltipIndex!].cliente;
+                    navigate(`/clientes?cliente=${encodeURIComponent(clientName)}`);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-35} textAnchor="end" height={60} />
                 <YAxis tick={{ fontSize: 11 }} />
