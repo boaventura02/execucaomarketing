@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
 
 const STATUS_OPTIONS: StatusGeral[] = ["Concluído", "Em andamento", "Revisão", "Pendente", "Atrasado"];
-const AUTORIZADO_OPTIONS = ["", "Bruna", "Henrique", "Rodrigo"];
+const APROVADO_OPTIONS = ["", "Bruna", "Henrique", "Rodrigo"];
 
 function CellInput({
   row,
@@ -29,7 +29,7 @@ function CellInput({
           disabled={isStatusGeralLocked}
           onChange={e => onUpdate(e.target.value as StatusGeral)}
           className={`w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer ${isStatusGeralLocked ? "opacity-30 cursor-not-allowed" : "hover:bg-white/50"}`}
-          title={isStatusGeralLocked ? "Preencha 'Autorizado por' primeiro" : ""}
+          title={isStatusGeralLocked ? "Preencha 'Aprovado por:' primeiro" : ""}
         >
           {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
@@ -42,7 +42,7 @@ function CellInput({
           onChange={e => onUpdate(e.target.value)}
           className="w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer hover:bg-white/50"
         >
-          {AUTORIZADO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "Selecionar..."}</option>)}
+          {APROVADO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "Selecionar..."}</option>)}
         </select>
       );
     }
