@@ -147,7 +147,11 @@ export default function Dashboard() {
           </div>
           <div className="divide-y divide-border">
             {filtered.map(c => (
-              <div key={c.cliente} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/50 transition-colors ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}>
+              <div 
+                key={c.cliente} 
+                className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/50 transition-colors cursor-pointer ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}
+                onClick={() => navigate(`/clientes?cliente=${encodeURIComponent(c.cliente)}`)}
+              >
                 <div className="flex items-center justify-between gap-3 sm:flex-1 min-w-0">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-card-foreground truncate">{c.cliente}</p>
