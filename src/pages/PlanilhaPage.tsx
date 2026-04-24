@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
 
 const STATUS_OPTIONS: StatusGeral[] = ["Concluído", "Em andamento", "Revisão", "Pendente", "Atrasado"];
-const AUTORIZADO_OPTIONS = ["", "Bruna", "Henrique", "Rodrigo"];
+const APROVADO_OPTIONS = ["", "Bruna", "Henrique", "Rodrigo"];
 
 function CellInput({
   row,
