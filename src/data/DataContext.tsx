@@ -40,6 +40,7 @@ export interface ClientSummary {
   totalEntregues: number;
   progresso: number;
   status: StatusGeral;
+  aprovadoPor: string;
 }
 
 export type ColumnKind = "base" | "custom";
