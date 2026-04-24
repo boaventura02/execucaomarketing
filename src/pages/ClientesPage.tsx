@@ -115,10 +115,16 @@ export default function ClientesPage() {
                                   <span className="text-muted-foreground">Qtd:</span>{" "}
                                   <span className="font-medium text-card-foreground">{item.quantidade || "—"}</span>
                                 </div>
-                                <div className="text-sm">
+                                 <div className="text-sm">
                                   <span className="text-muted-foreground">Status Entrega:</span>{" "}
                                   <span className="font-medium text-card-foreground">{fullRow?.statusEntrega || "—"}</span>
                                 </div>
+                                {fullRow?.autorizadoPor && (
+                                  <div className="text-sm">
+                                    <span className="text-muted-foreground">Aprovado por:</span>{" "}
+                                    <span className="font-medium text-card-foreground">{fullRow.autorizadoPor}</span>
+                                  </div>
+                                )}
                               </div>
                               <StatusBadge status={item.statusGeral} size="sm" />
                             </div>
