@@ -29,7 +29,7 @@ function CellInput({
           disabled={isStatusGeralLocked}
           onChange={e => onUpdate(e.target.value as StatusGeral)}
           className={`w-full px-2 py-1.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-ring rounded cursor-pointer ${isStatusGeralLocked ? "opacity-30 cursor-not-allowed" : "hover:bg-white/50"}`}
-          title={isStatusGeralLocked ? "Preencha 'Autorizado por' primeiro" : ""}
+          title={isStatusGeralLocked ? "Preencha 'Aprovado por:' primeiro" : ""}
         >
           {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
