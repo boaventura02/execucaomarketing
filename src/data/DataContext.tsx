@@ -118,7 +118,7 @@ const initialColumns: ColumnDef[] = [
   { id: "dataGravacao", kind: "base", label: "Data Gravação", type: "date", width: "120px" },
   { id: "statusGravacao", kind: "base", label: "Status Gravação", type: "text", width: "130px" },
   { id: "dataEntregaPrevista", kind: "base", label: "Entrega Prevista", type: "date", width: "120px" },
-  { id: "autorizadoPor", kind: "base", label: "Autorizado por", type: "select", width: "130px" },
+  { id: "autorizadoPor", kind: "base", label: "Aprovado por:", type: "select", width: "130px" },
   { id: "statusEntrega", kind: "base", label: "Status Entrega", type: "text", width: "130px" },
   { id: "prazoFinal", kind: "base", label: "Prazo Final", type: "date", width: "120px" },
   { id: "statusGeral", kind: "base", label: "Status Geral", type: "select", width: "140px" },
