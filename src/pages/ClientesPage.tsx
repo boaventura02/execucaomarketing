@@ -76,6 +76,9 @@ export default function ClientesPage() {
                     <p className="font-semibold text-card-foreground truncate">{c.cliente}</p>
                     <div className="flex items-center gap-2 sm:gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsavel}</span>
+                      {c.aprovadoPor && (
+                        <span className="flex items-center gap-1"><Check className="w-3 h-3" />{c.aprovadoPor}</span>
+                      )}
                       <span className="flex items-center gap-1"><Layers className="w-3 h-3" />{c.totalEntregues}/{c.totalItems}</span>
                       <span className="hidden sm:flex items-center gap-1"><Calendar className="w-3 h-3" />Vence {formatDate(c.vencimentoContrato)}</span>
                     </div>
