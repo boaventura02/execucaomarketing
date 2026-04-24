@@ -17,6 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { summaries, allResponsaveis, allStatuses } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
