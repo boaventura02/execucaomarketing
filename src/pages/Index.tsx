@@ -132,9 +132,9 @@ export default function Dashboard() {
               <BarChart 
                 data={deliveryData} 
                 margin={{ left: -10, right: 10 }}
-                onClick={(data) => {
-                  if (data && data.activePayload && data.activePayload.length > 0) {
-                    const clientName = filtered[data.activeTooltipIndex!].cliente;
+                onClick={(data: any) => {
+                  if (data && data.activeTooltipIndex !== undefined) {
+                    const clientName = filtered[data.activeTooltipIndex].cliente;
                     navigate(`/clientes?cliente=${encodeURIComponent(clientName)}`);
                   }
                 }}
