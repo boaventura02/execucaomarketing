@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check } from "lucide-react";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
