@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Save } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check } from "lucide-react";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
