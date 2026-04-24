@@ -23,12 +23,21 @@ function rowAccent(status: StatusGeral) {
 }
 
 export default function ClientesPage() {
+  const [searchParams] = useSearchParams();
+  const initialCliente = searchParams.get("cliente") || "";
+  
   const { summaries, allResponsaveis, allStatuses, rows, updateRow } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [filterCliente, setFilterCliente] = useState("");
+  const [filterCliente, setFilterCliente] = useState(initialCliente);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [obsDrafts, setObsDrafts] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (initialCliente) {
+      setExpanded(p => ({ ...p, [initialCliente]: true }));
+    }
+  }, [initialCliente]);
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
