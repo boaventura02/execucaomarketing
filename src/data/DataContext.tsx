@@ -4,6 +4,12 @@ import { fetchSheetRows, SHEET_URL } from "@/lib/googleSheetsSync";
 
 export type StatusGeral = "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente" | "Não definido";
 
+export interface LocalObservation {
+  text: string;
+  author: string;
+  timestamp: string;
+}
+
 export interface ClientRow {
   id: string;
   cliente: string;
@@ -20,6 +26,7 @@ export interface ClientRow {
   autorizadoPor: string;
   prazoFinal: string;
   observacoes: string;
+  localObservacoes: LocalObservation[];
   /** Valores das colunas customizadas, indexados por columnId */
   custom: Record<string, string>;
 }
