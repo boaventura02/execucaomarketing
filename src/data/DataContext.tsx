@@ -363,7 +363,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       cliente: "", dataFechamento: "", vencimentoContrato: "", responsavel: "",
       tipoConteudo: "", quantidadeContratada: "", statusEntrega: "", statusGeral: "Pendente",
       dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "",
-      prazoFinal: "", observacoes: "", custom: {},
+      prazoFinal: "", observacoes: "", localObservacoes: [], custom: {},
     }]);
   }, []);
 
