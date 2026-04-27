@@ -88,11 +88,11 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       .filter(c => c.status === "Atrasado")
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
-  // Max 6 responsibles per slide
+  // Max 3 responsibles per slide
   const responsiblesChunks = useMemo(() => {
     const chunks = [];
-    for (let i = 0; i < porResponsavel.length; i += 6) {
-      chunks.push(porResponsavel.slice(i, i + 6));
+    for (let i = 0; i < porResponsavel.length; i += 3) {
+      chunks.push(porResponsavel.slice(i, i + 3));
     }
     return chunks.length > 0 ? chunks : [[]];
   }, [porResponsavel]);
