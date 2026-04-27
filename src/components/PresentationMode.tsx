@@ -361,14 +361,24 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                             <MiniInfo label="Pendente" value={c.pendentes} />
                           </div>
 
-                          {c.localObservacoes && c.localObservacoes.length > 0 && (
-                            <div className="bg-muted/50 p-[1.5vh] rounded-[1.5vh] border-l-[0.5vh] border-red-500 flex-1 min-h-0 overflow-hidden">
-                              <p className="text-[1.4vh] font-bold text-muted-foreground uppercase mb-[0.5vh]">Observações:</p>
-                              <div className="text-[1.6vh] italic text-foreground line-clamp-3">
-                                {c.localObservacoes.map((obs: any) => obs.text).join(" | ")}
+                          <div className="flex-1 min-h-0 overflow-hidden flex flex-col gap-[1vh]">
+                            {c.observacoes && (
+                              <div className="bg-muted/50 p-[1.5vh] rounded-[1.5vh] border-l-[0.5vh] border-red-500">
+                                <p className="text-[1.4vh] font-bold text-muted-foreground uppercase mb-[0.5vh]">Observações Gerais:</p>
+                                <div className="text-[1.6vh] italic text-foreground line-clamp-2">
+                                  {c.observacoes}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                            {c.localObservacoes && c.localObservacoes.length > 0 && (
+                              <div className="bg-muted/50 p-[1.5vh] rounded-[1.5vh] border-l-[0.5vh] border-orange-500">
+                                <p className="text-[1.4vh] font-bold text-muted-foreground uppercase mb-[0.5vh]">Observações do Cliente:</p>
+                                <div className="text-[1.6vh] italic text-foreground line-clamp-2">
+                                  {c.localObservacoes.map((obs: any) => obs.text).join(" | ")}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })
