@@ -341,21 +341,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Polling: roda imediatamente e depois a cada 30s
+  // Polling: roda imediatamente e depois a cada 4 minutos (240.000ms)
   useEffect(() => {
     isMountedRef.current = true;
     if (isEditing) return;
+    
+    // Sincroniza ao montar o componente
     syncNow();
+    
+    // Define o intervalo para 4 minutos
     const interval = setInterval(() => {
       if (!isEditing) {
         syncNow();
       }
-    }, 10_000);
+    }, 240_000); // 4 minutos em milissegundos
+
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
     };
-  }, [syncNow]);
+  }, [syncNow, isEditing]);
 
   const updateRow = useCallback((id: string, updates: Partial<ClientRow>) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
