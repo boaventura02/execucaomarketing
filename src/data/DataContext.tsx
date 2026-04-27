@@ -218,11 +218,11 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
   });
 
   const statusOrder: Record<string, number> = {
-    "Concluído": 1,
-    "Em andamento": 2,
+    "Atrasado": 1,
+    "Pendente": 2,
     "Revisão": 3,
-    "Pendente": 4,
-    "Atrasado": 5,
+    "Em andamento": 4,
+    "Concluído": 5,
     "Não definido": 6
   };
 
