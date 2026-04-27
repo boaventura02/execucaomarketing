@@ -80,10 +80,12 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return [...summaries]
       .map(c => {
         const pendentes = c.totalItems - c.totalEntregues;
-        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso);
+        // Prioritize clients with local observations or general observations too
+        const hasObs = (c.observacoes || (c.localObservacoes && c.localObservacoes.length > 0)) ? 50 : 0;
+        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso) + hasObs;
         return { ...c, pendentes, score };
       })
-      .filter(c => c.status !== "Concluído")
+      .filter(c => c.status !== "Concluído" || (c.localObservacoes && c.localObservacoes.length > 0))
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
 
