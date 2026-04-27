@@ -74,6 +74,9 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <div className="flex-1">
           {navItems.map(item => {
             const active = location.pathname === item.to;
+            // Omit presentation mode from mobile sidebar
+            if (onNavigate && item.to === "/apresentacao") return null;
+            
             return (
               <Link
                 key={item.to}
