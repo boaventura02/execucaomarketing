@@ -267,12 +267,12 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
 
             {/* Slides de Responsáveis (Dinâmico) */}
             {currentSlide >= 1 && currentSlide < 1 + responsiblesChunks.length && (
-              <div className="space-y-8 h-full flex flex-col">
-                <header className="text-center">
-                  <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Resumo por Responsável</h1>
-                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status • Página {currentSlide} de {responsiblesChunks.length}</p>
+              <div className="w-full h-full flex flex-col items-center justify-center p-[2vh]">
+                <header className="text-center mb-[4vh]">
+                  <h1 className="text-[5vh] lg:text-[7vh] font-serif font-bold mb-[0.5vh]">Resumo por Responsável</h1>
+                  <p className="text-[2vh] text-muted-foreground uppercase tracking-widest font-bold">Visão de Carteira • Página {currentSlide} de {responsiblesChunks.length}</p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-hidden pb-8">
+                <div className="w-full flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[2vh] min-h-0 items-center justify-center">
                   {responsiblesChunks[currentSlide - 1]?.map((r) => {
                     const entreguesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Concluído").length;
                     const pendentesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Pendente").length;
@@ -280,39 +280,27 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                     const revisaoCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Revisão").length;
                     
                     return (
-                      <div key={r.responsavel} className="bg-card p-6 rounded-3xl border border-border shadow-xl flex flex-col gap-6">
-                        <div className="flex items-center justify-between border-b border-border pb-4">
-                          <h3 className="text-2xl font-black text-primary">{r.responsavel}</h3>
-                          <div className="bg-primary/10 px-4 py-1 rounded-full text-primary font-bold">
+                      <div key={r.responsavel} className="bg-card p-[3vh] rounded-[3vh] border border-border shadow-xl flex flex-col gap-[2.5vh] h-full max-h-[35vh]">
+                        <div className="flex items-center justify-between border-b border-border pb-[1.5vh]">
+                          <h3 className="text-[2.5vh] font-black text-primary truncate max-w-[60%]">{r.responsavel}</h3>
+                          <div className="bg-primary/10 px-[1.5vw] py-[0.5vh] rounded-full text-primary font-bold text-[1.5vh]">
                             {r.clientes} Clientes
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-green-500/10 p-4 rounded-2xl border border-green-500/20 text-center">
-                            <div className="text-3xl font-black text-green-500">{entreguesCount}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-green-600/70">Entregues</div>
-                          </div>
-                          <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 text-center">
-                            <div className="text-3xl font-black text-red-500">{r.atrasados}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-red-600/70">Atrasados</div>
-                          </div>
-                          <div className="bg-yellow-500/10 p-4 rounded-2xl border border-yellow-500/20 text-center">
-                            <div className="text-3xl font-black text-yellow-500">{pendentesCount}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-yellow-600/70">Pendentes</div>
-                          </div>
-                          <div className="bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20 text-center">
-                            <div className="text-3xl font-black text-blue-500">{emAndamentoCount + revisaoCount}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-blue-600/70">Em Curso</div>
-                          </div>
+                        <div className="grid grid-cols-2 gap-[1.5vh] flex-1">
+                          <StatusMiniCard label="Entregues" value={entreguesCount} color="green" />
+                          <StatusMiniCard label="Atrasados" value={r.atrasados} color="red" />
+                          <StatusMiniCard label="Pendentes" value={pendentesCount} color="yellow" />
+                          <StatusMiniCard label="Em Curso" value={emAndamentoCount + revisaoCount} color="blue" />
                         </div>
 
-                        <div className="mt-auto">
-                          <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
-                            <span>Progresso Geral</span>
+                        <div className="mt-auto pt-[1vh]">
+                          <div className="flex justify-between text-[1.2vh] font-bold mb-[0.5vh] uppercase tracking-wider text-muted-foreground">
+                            <span>Progresso</span>
                             <span>{r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0}%</span>
                           </div>
-                          <div className="h-3 bg-muted rounded-full overflow-hidden border border-border">
+                          <div className="h-[1vh] bg-muted rounded-full overflow-hidden border border-border">
                             <div 
                               className="h-full bg-primary transition-all duration-1000" 
                               style={{ width: `${r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0}%` }}
