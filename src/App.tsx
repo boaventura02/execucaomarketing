@@ -7,7 +7,7 @@ import { DataProvider } from "@/data/DataContext";
 import { FinanceProvider } from "@/data/FinanceContext";
 import Index from "./pages/Index.tsx";
 import ClientesPage from "./pages/ClientesPage.tsx";
-import PlanilhaPage from "./pages/PlanilhaPage.tsx";
+// Planilha removida
 import ApresentacaoPage from "./pages/ApresentacaoPage.tsx";
 import FinanceiroPage from "./pages/FinanceiroPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -25,7 +25,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/clientes" element={<ClientesPage />} />
-              <Route path="/planilha" element={<PlanilhaPage />} />
+              {/* Planilha removida */}
               <Route path="/apresentacao" element={<ApresentacaoPage />} />
               <Route path="/financeiro" element={<FinanceiroPage />} />
               <Route path="*" element={<NotFound />} />

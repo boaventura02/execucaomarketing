@@ -80,10 +80,12 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return [...summaries]
       .map(c => {
         const pendentes = c.totalItems - c.totalEntregues;
-        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso);
+        // Prioritize clients with local observations or general observations too
+        const hasObs = (c.observacoes || (c.localObservacoes && c.localObservacoes.length > 0)) ? 50 : 0;
+        const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso) + hasObs;
         return { ...c, pendentes, score };
       })
-      .filter(c => c.status !== "Concluído")
+      .filter(c => c.status !== "Concluído" || (c.localObservacoes && c.localObservacoes.length > 0))
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
 
@@ -217,23 +219,32 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                   <p className="text-2xl text-muted-foreground">Status Executivo da Operação</p>
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  <KPISlideCard title="Total de Clientes" value={totalClientes} icon={Users} color="text-primary" />
+                  <KPISlideCard title="Total de Clientes" value={`${totalClientes}`} icon={Users} color="text-primary" />
                   <KPISlideCard title="Total de Entregues (%)" value={`${totalEntreguesPercent}%`} icon={CheckCircle2} color="text-green-500" />
-                  <KPISlideCard title="Total de Pendentes" value={totalPendentes} icon={Clock} color="text-yellow-500" />
-                  <KPISlideCard title="Total de Atrasados" value={atrasadosCount} icon={AlertTriangle} color="text-red-500" />
+                  <KPISlideCard title="Total de Pendentes (%)" value={`${100 - totalEntreguesPercent}%`} icon={Clock} color="text-yellow-500" />
+                  <KPISlideCard title="Total de Atrasados (%)" value={`${totalClientes > 0 ? Math.round((atrasadosCount / totalClientes) * 100) : 0}%`} icon={AlertTriangle} color="text-red-500" />
                 </div>
                 <div className="flex justify-center">
                   <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl flex flex-col items-center justify-center w-full max-w-2xl">
-                    <h3 className="text-2xl font-bold mb-4">Status Geral</h3>
+                    <h3 className="text-2xl font-bold mb-4">Status Geral (Porcentagem)</h3>
                     <div className="w-full h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={statusData} cx="50%" cy="50%" innerRadius={80} outerRadius={100} paddingAngle={5} dataKey="value">
+                          <Pie 
+                            data={statusData} 
+                            cx="50%" 
+                            cy="50%" 
+                            innerRadius={80} 
+                            outerRadius={100} 
+                            paddingAngle={5} 
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
                             {statusData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || "#8884d8"} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip formatter={(value: number) => [`${((value / totalClientes) * 100).toFixed(0)}%`, "Proporção"]} />
                           <Legend wrapperStyle={{ fontSize: '18px', fontWeight: 'bold' }} />
                         </PieChart>
                       </ResponsiveContainer>
@@ -243,58 +254,63 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 2: Performance por Responsável (%) */}
+            {/* Slide 2: Responsáveis */}
             {currentSlide === 1 && (
               <div className="space-y-8 h-full flex flex-col">
                 <header className="text-center">
-                  <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Performance por Responsável</h1>
-                  <p className="text-xl text-muted-foreground">Eficiência de Entrega em Porcentagem (%)</p>
+                  <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Resumo por Responsável</h1>
+                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status</p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl h-[500px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart 
-                        data={porResponsavel.map(r => ({ 
-                          ...r, 
-                          percent: r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0 
-                        }))} 
-                        layout="vertical" 
-                        margin={{ left: 100, right: 30 }}
-                      >
-                        <XAxis type="number" domain={[0, 100]} tickFormatter={(val) => `${val}%`} />
-                        <YAxis 
-                          dataKey="responsavel" 
-                          type="category" 
-                          tick={{ fontSize: 18, fontWeight: 'bold' }} 
-                          width={120}
-                        />
-                        <Tooltip formatter={(value) => [`${value}%`, "Performance"]} />
-                        <Bar dataKey="percent" fill="#22c55e" radius={[0, 4, 4, 0]} name="Performance (%)" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="space-y-4 overflow-auto max-h-[600px] pr-4">
-                    {porResponsavel.map((r, i) => {
-                      const perc = r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0;
-                      return (
-                        <div key={r.responsavel} className="bg-card p-6 rounded-2xl border border-border flex items-center justify-between shadow-lg">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                              {i + 1}
-                            </div>
-                            <div>
-                              <h3 className="text-2xl font-bold">{r.responsavel}</h3>
-                              <p className="text-muted-foreground">{r.clientes} clientes ativos</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-4xl font-black text-green-500">{perc}%</div>
-                            <div className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">Eficiência</div>
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-y-auto pr-2 pb-8">
+                  {porResponsavel.map((r) => {
+                    const entreguesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Concluído").length;
+                    const pendentesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Pendente").length;
+                    const emAndamentoCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Em andamento").length;
+                    const revisaoCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Revisão").length;
+                    
+                    return (
+                      <div key={r.responsavel} className="bg-card p-6 rounded-3xl border border-border shadow-xl flex flex-col gap-6">
+                        <div className="flex items-center justify-between border-b border-border pb-4">
+                          <h3 className="text-2xl font-black text-primary">{r.responsavel}</h3>
+                          <div className="bg-primary/10 px-4 py-1 rounded-full text-primary font-bold">
+                            {r.clientes} Clientes
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-green-500/10 p-4 rounded-2xl border border-green-500/20 text-center">
+                            <div className="text-3xl font-black text-green-500">{entreguesCount}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-green-600/70">Entregues</div>
+                          </div>
+                          <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 text-center">
+                            <div className="text-3xl font-black text-red-500">{r.atrasados}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-red-600/70">Atrasados</div>
+                          </div>
+                          <div className="bg-yellow-500/10 p-4 rounded-2xl border border-yellow-500/20 text-center">
+                            <div className="text-3xl font-black text-yellow-500">{pendentesCount}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-yellow-600/70">Pendentes</div>
+                          </div>
+                          <div className="bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20 text-center">
+                            <div className="text-3xl font-black text-blue-500">{emAndamentoCount + revisaoCount}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-blue-600/70">Em Curso</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-auto">
+                          <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
+                            <span>Progresso Geral</span>
+                            <span>{r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0}%</span>
+                          </div>
+                          <div className="h-3 bg-muted rounded-full overflow-hidden border border-border">
+                            <div 
+                              className="h-full bg-primary transition-all duration-1000" 
+                              style={{ width: `${r.contratado > 0 ? Math.round((r.entregue / r.contratado) * 100) : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -332,27 +348,49 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                       return (
                         <div
                           key={c.cliente}
-                          className={`bg-card p-8 rounded-3xl border-4 ${borderColor} shadow-2xl flex items-center gap-8`}
+                          className={`bg-card p-8 rounded-3xl border-4 ${borderColor} shadow-2xl flex flex-col gap-6`}
                         >
-                          <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
-                            {((currentSlide - 2) * 4) + idx + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
-                            <div className="flex items-center gap-3 mt-2 flex-wrap">
-                              <StatusBadge status={c.status} />
-                              <span className="text-lg font-bold text-muted-foreground truncate">
-                                {c.responsavel}
-                              </span>
+                          <div className="flex items-center gap-8">
+                            <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
+                              {((currentSlide - 2) * 4) + idx + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
+                              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                <StatusBadge status={c.status} />
+                                <span className="text-lg font-bold text-muted-foreground truncate">
+                                  {c.responsavel}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className={`text-5xl font-black ${textColor}`}>{c.pendentes}</div>
+                              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                Pendências
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right shrink-0">
-                            <div className={`text-5xl font-black ${textColor}`}>{c.pendentes}</div>
-                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                              Pendências
+
+                          {(c.observacoes || (c.localObservacoes && c.localObservacoes.length > 0)) && (
+                            <div className="bg-muted/30 p-5 rounded-2xl border border-border/50">
+                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+                                <Users className="w-3.5 h-3.5" /> Observações do Cliente
+                              </p>
+                              <div className="space-y-3 max-h-[160px] overflow-y-auto pr-2">
+                                {c.observacoes && (
+                                  <p className="text-sm italic text-foreground/80 leading-relaxed border-l-2 border-primary/30 pl-3 py-1">
+                                    {c.observacoes}
+                                  </p>
+                                )}
+                                {c.localObservacoes?.map((obs, i) => (
+                                  <div key={i} className="text-sm text-foreground/80 leading-relaxed border-l-2 border-primary/30 pl-3 py-1">
+                                    <span className="font-bold text-[10px] uppercase text-primary block mb-0.5">{obs.author} • {obs.timestamp}</span>
+                                    {obs.text}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            <div className="text-sm font-bold mt-2">{c.progresso}% concluído</div>
-                          </div>
+                          )}
                         </div>
                       );
                     })

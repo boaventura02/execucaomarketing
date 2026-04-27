@@ -7,7 +7,6 @@ import logo from "@/assets/logo.png";
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/clientes", label: "Clientes", icon: Users },
-  { to: "/planilha", label: "Planilha", icon: Table2 },
   { to: "/apresentacao", label: "Apresentação", icon: Presentation },
   { to: "/financeiro", label: "Financeiro", icon: CircleDollarSign },
 ];

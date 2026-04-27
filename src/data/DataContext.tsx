@@ -48,6 +48,8 @@ export interface ClientSummary {
   progresso: number;
   status: StatusGeral;
   aprovadoPor: string;
+  observacoes: string;
+  localObservacoes: LocalObservation[];
 }
 
 export type ColumnKind = "base" | "custom";
@@ -223,6 +225,8 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       progresso,
       status,
       aprovadoPor: first.autorizadoPor || "",
+      observacoes: first.observacoes || "",
+      localObservacoes: first.localObservacoes || [],
     };
   });
 
