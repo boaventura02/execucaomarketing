@@ -16,6 +16,11 @@ function formatDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
+function formatDateTime(d: string) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("pt-BR");
+}
+
 function rowAccent(status: StatusGeral) {
   if (status === "Atrasado") return "border-l-status-late bg-status-late-bg/20";
   if (status === "Revisão") return "border-l-status-review bg-status-review-bg/20";
