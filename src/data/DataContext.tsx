@@ -287,6 +287,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Persiste mudanças no localStorage
   React.useEffect(() => {
