@@ -221,29 +221,29 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
           >
             {/* Slide 1: Resumo Geral */}
             {currentSlide === 0 && (
-              <div className="space-y-12">
+              <div className="w-full max-w-[90vw] space-y-[4vh]">
                 <header className="text-center">
-                  <h1 className="text-5xl lg:text-7xl font-serif font-bold mb-4">Resumo Geral</h1>
-                  <p className="text-2xl text-muted-foreground">Status Executivo da Operação</p>
+                  <h1 className="text-[6vh] lg:text-[8vh] font-serif font-bold mb-[1vh]">Resumo Geral</h1>
+                  <p className="text-[2.5vh] text-muted-foreground uppercase tracking-widest">Status Executivo da Operação</p>
                 </header>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[2vw]">
                   <KPISlideCard title="Total de Clientes" value={`${totalClientes}`} icon={Users} color="text-primary" />
                   <KPISlideCard title="Total de Entregues (%)" value={`${totalEntreguesPercent}%`} icon={CheckCircle2} color="text-green-500" />
                   <KPISlideCard title="Total de Pendentes (%)" value={`${100 - totalEntreguesPercent}%`} icon={Clock} color="text-yellow-500" />
                   <KPISlideCard title="Total de Atrasados (%)" value={`${totalClientes > 0 ? Math.round((atrasadosCount / totalClientes) * 100) : 0}%`} icon={AlertTriangle} color="text-red-500" />
                 </div>
-                <div className="flex justify-center">
-                  <div className="bg-card rounded-3xl p-8 border border-border shadow-2xl flex flex-col items-center justify-center w-full max-w-2xl">
-                    <h3 className="text-2xl font-bold mb-4">Status Geral (Porcentagem)</h3>
-                    <div className="w-full h-64">
+                <div className="flex justify-center flex-1 min-h-0">
+                  <div className="bg-card rounded-[3vh] p-[3vh] border border-border shadow-2xl flex flex-col items-center justify-center w-full max-w-[50vw] aspect-video">
+                    <h3 className="text-[2.5vh] font-bold mb-[2vh]">Distribuição por Status</h3>
+                    <div className="w-full h-full min-h-0 flex-1">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie 
                             data={statusData} 
                             cx="50%" 
                             cy="50%" 
-                            innerRadius={80} 
-                            outerRadius={100} 
+                            innerRadius="60%" 
+                            outerRadius="80%" 
                             paddingAngle={5} 
                             dataKey="value"
                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -252,8 +252,11 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                               <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || "#8884d8"} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: number) => [`${((value / totalClientes) * 100).toFixed(0)}%`, "Proporção"]} />
-                          <Legend wrapperStyle={{ fontSize: '18px', fontWeight: 'bold' }} />
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '1vh', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            formatter={(value: number) => [`${((value / totalClientes) * 100).toFixed(0)}%`, "Proporção"]} 
+                          />
+                          <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '1.8vh', fontWeight: 'bold', paddingTop: '1vh' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
