@@ -115,10 +115,6 @@ export default function ClientesPage() {
                     <div className="grid gap-3">
                       {c.items.map(item => {
                         const fullRow = rows.find(r => r.id === item.rowId);
-                        const draft = obsDrafts[item.rowId];
-                        const currentObs = fullRow?.observacoes || "";
-                        const value = draft !== undefined ? draft : currentObs;
-                        const isDirty = draft !== undefined && draft !== currentObs;
                         return (
                           <div
                             key={item.rowId}
