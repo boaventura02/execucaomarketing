@@ -156,6 +156,8 @@ interface DataContextType {
   syncError: string | null;
   syncNow: () => Promise<void>;
   sheetUrl: string;
+  isEditing: boolean;
+  setIsEditing: (editing: boolean) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
