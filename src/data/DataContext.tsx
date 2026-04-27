@@ -312,8 +312,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           const local = localByKey.get(key);
           return {
             ...d,
-            // Observações são SEMPRE preservadas localmente (a planilha não as gerencia).
-            observacoes: local?.observacoes || d.observacoes || "",
+            // A planilha é a fonte da verdade para observacoes da planilha.
+            // Preservamos o histórico local que não está na planilha.
+            localObservacoes: local?.localObservacoes || [],
             id: genId(),
             custom: local?.custom ?? prev[i]?.custom ?? {},
           };
