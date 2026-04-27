@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check, Plus, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus } from "lucide-react";
 import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -274,26 +274,5 @@ function ObservationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {filtered.length === 0 && (
-            <div className="bg-card rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
-              Nenhum cliente encontrado.
-            </div>
-          )}
-        </div>
-      </div>
-    </AppLayout>
   );
 }
