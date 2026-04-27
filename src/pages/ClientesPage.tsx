@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus, Trash2 } from "lucide-react";
 import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
