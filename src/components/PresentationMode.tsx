@@ -88,6 +88,14 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       .filter(c => c.status === "Atrasado")
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
+  // Max 6 responsibles per slide
+  const responsiblesChunks = useMemo(() => {
+    const chunks = [];
+    for (let i = 0; i < porResponsavel.length; i += 6) {
+      chunks.push(porResponsavel.slice(i, i + 6));
+    }
+    return chunks.length > 0 ? chunks : [[]];
+  }, [porResponsavel]);
 
   // Max 4 clients per slide
   const clientsChunks = useMemo(() => {
@@ -98,7 +106,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return chunks.length > 0 ? chunks : [[]];
   }, [allPrioridade]);
 
-  const totalSlides = 2 + clientsChunks.length;
+  const totalSlides = 1 + responsiblesChunks.length + clientsChunks.length;
 
   // Handle Fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -254,15 +262,15 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 2: Responsáveis */}
-            {currentSlide === 1 && (
+            {/* Slides de Responsáveis (Dinâmico) */}
+            {currentSlide >= 1 && currentSlide < 1 + responsiblesChunks.length && (
               <div className="space-y-8 h-full flex flex-col">
                 <header className="text-center">
                   <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Resumo por Responsável</h1>
-                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status</p>
+                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status • Página {currentSlide} de {responsiblesChunks.length}</p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-y-auto pr-2 pb-8">
-                  {porResponsavel.map((r) => {
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-hidden pb-8">
+                  {responsiblesChunks[currentSlide - 1]?.map((r) => {
                     const entreguesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Concluído").length;
                     const pendentesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Pendente").length;
                     const emAndamentoCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Em andamento").length;
@@ -315,8 +323,8 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slides 3+: Clientes que Requerem Maior Atenção (Dinâmico) */}
-            {currentSlide >= 2 && (
+            {/* Slides de Clientes em Atraso (Dinâmico) */}
+            {currentSlide >= 1 + responsiblesChunks.length && (
               <div className="space-y-8 h-full flex flex-col bg-red-500/5 -m-8 lg:-m-16 p-8 lg:p-16">
                 <header className="text-center">
                   <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
@@ -325,11 +333,12 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                     <AlertTriangle className="w-14 h-14 animate-pulse" />
                   </h1>
                   <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
-                    Página {currentSlide - 1} de {clientsChunks.length}
+                    Página {currentSlide - responsiblesChunks.length} de {clientsChunks.length}
                   </p>
                 </header>
+
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden">
-                  {clientsChunks[currentSlide - 2]?.length === 0 ? (
+                  {clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.length === 0 ? (
                     <div className="lg:col-span-2 flex items-center justify-center">
                       <div className="bg-green-100 dark:bg-green-950/30 p-16 rounded-3xl border-4 border-green-500 text-center">
                         <CheckCircle2 className="w-24 h-24 text-green-600 mx-auto mb-6" />
@@ -339,7 +348,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                       </div>
                     </div>
                   ) : (
-                    clientsChunks[currentSlide - 2]?.map((c, idx) => {
+                    clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.map((c, idx) => {
                       const isAtrasado = c.status === "Atrasado";
                       const borderColor = isAtrasado ? "border-red-500" : c.status === "Pendente" ? "border-yellow-500" : "border-orange-500";
                       const textColor = isAtrasado ? "text-red-600" : c.status === "Pendente" ? "text-yellow-600" : "text-orange-600";
@@ -352,7 +361,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                         >
                           <div className="flex items-center gap-8">
                             <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
-                              {((currentSlide - 2) * 4) + idx + 1}
+                              {((currentSlide - 1 - responsiblesChunks.length) * 4) + idx + 1}
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
