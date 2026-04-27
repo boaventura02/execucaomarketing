@@ -162,54 +162,54 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
   }, [onExit, totalSlides]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden text-foreground select-none">
       {/* Top Controls */}
-      <div className="absolute top-4 right-4 flex gap-2 z-[110]">
+      <div className="absolute top-[2vh] right-[2vw] flex gap-[1vw] z-[110]">
         <button
           onClick={onExit}
-          className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
+          className="flex items-center gap-[0.5vw] px-[1.5vw] py-[1vh] bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
+          <ArrowLeft className="w-[1.5vw] h-[1.5vw]" />
+          <span className="text-[1.2vh] font-bold uppercase tracking-wider">Voltar</span>
         </button>
         <button
           onClick={() => setIsPaused((p) => !p)}
-          className={`flex items-center gap-2 px-4 py-2 border shadow-lg rounded-full transition-all ${
+          className={`flex items-center gap-[0.5vw] px-[1.5vw] py-[1vh] border shadow-lg rounded-full transition-all ${
             isPaused ? "bg-yellow-500 text-white border-yellow-600 animate-pulse" : "bg-card border-border hover:bg-muted"
           }`}
         >
-          {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-          <span className="text-sm font-bold uppercase tracking-wider">{isPaused ? "Pausado" : "Pausar"}</span>
+          {isPaused ? <Play className="w-[1.5vw] h-[1.5vw]" /> : <Pause className="w-[1.5vw] h-[1.5vw]" />}
+          <span className="text-[1.2vh] font-bold uppercase tracking-wider">{isPaused ? "Pausado" : "Pausar"}</span>
         </button>
         <button
           onClick={toggleFullscreen}
-          className="p-2.5 bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
+          className="p-[1vh] bg-card border border-border shadow-lg rounded-full hover:bg-muted transition-all"
         >
-          {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          {isFullscreen ? <Minimize2 className="w-[1.5vw] h-[1.5vw]" /> : <Maximize2 className="w-[1.5vw] h-[1.5vw]" />}
         </button>
         <button
           onClick={onExit}
-          className="p-2.5 bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all"
+          className="p-[1vh] bg-destructive text-destructive-foreground border border-destructive shadow-lg rounded-full hover:bg-destructive/90 transition-all"
         >
-          <X className="w-5 h-5" />
+          <X className="w-[1.5vw] h-[1.5vw]" />
         </button>
       </div>
 
       {/* Side Navigation */}
       <button
         onClick={() => setCurrentSlide((p) => (p - 1 + totalSlides) % totalSlides)}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
+        className="absolute left-[1vw] top-1/2 -translate-y-1/2 z-[110] p-[1vh] bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
       >
-        <ChevronLeft className="w-7 h-7" />
+        <ChevronLeft className="w-[2.5vw] h-[2.5vw]" />
       </button>
       <button
         onClick={() => setCurrentSlide((p) => (p + 1) % totalSlides)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-3 bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
+        className="absolute right-[1vw] top-1/2 -translate-y-1/2 z-[110] p-[1vh] bg-card/80 border border-border shadow-xl rounded-full hover:bg-muted transition-all backdrop-blur-sm"
       >
-        <ChevronRight className="w-7 h-7" />
+        <ChevronRight className="w-[2.5vw] h-[2.5vw]" />
       </button>
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <AnimatePresence initial={false} mode="wait">
           <motion.div
             key={currentSlide}
@@ -217,7 +217,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 p-8 lg:p-16 pt-20 flex flex-col justify-center overflow-y-auto"
+            className="absolute inset-0 p-[4vh] lg:p-[6vh] flex flex-col items-center justify-center overflow-hidden"
           >
             {/* Slide 1: Resumo Geral */}
             {currentSlide === 0 && (
