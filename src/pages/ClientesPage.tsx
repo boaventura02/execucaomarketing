@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus, Trash2 } from "lucide-react";
 import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -163,10 +163,24 @@ export default function ClientesPage() {
                                   </label>
                                   <div className="space-y-2">
                                     {fullRow.localObservacoes.map((obs, idx) => (
-                                      <div key={idx} className="p-3 rounded-md bg-background border border-border text-sm">
+                                      <div key={idx} className="p-3 rounded-md bg-background border border-border text-sm group relative">
                                         <div className="flex justify-between items-center mb-1 text-[10px] font-medium text-muted-foreground uppercase">
                                           <span>{obs.author}</span>
-                                          <span>{formatDateTime(obs.timestamp)}</span>
+                                          <div className="flex items-center gap-2">
+                                            <span>{formatDateTime(obs.timestamp)}</span>
+                                            <button
+                                              onClick={() => {
+                                                const newObs = [...fullRow.localObservacoes];
+                                                newObs.splice(idx, 1);
+                                                updateRow(item.rowId, { localObservacoes: newObs });
+                                                toast({ title: "Removido", description: "Observação excluída com sucesso." });
+                                              }}
+                                              className="text-status-late opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-status-late-bg/20 rounded"
+                                              title="Excluir observação"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </button>
+                                          </div>
                                         </div>
                                         <p className="text-card-foreground whitespace-pre-wrap">{obs.text}</p>
                                       </div>
