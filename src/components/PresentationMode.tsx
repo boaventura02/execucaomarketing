@@ -88,6 +88,14 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       .filter(c => c.status === "Atrasado")
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
+  // Max 6 responsibles per slide
+  const responsiblesChunks = useMemo(() => {
+    const chunks = [];
+    for (let i = 0; i < porResponsavel.length; i += 6) {
+      chunks.push(porResponsavel.slice(i, i + 6));
+    }
+    return chunks.length > 0 ? chunks : [[]];
+  }, [porResponsavel]);
 
   // Max 4 clients per slide
   const clientsChunks = useMemo(() => {
@@ -98,7 +106,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return chunks.length > 0 ? chunks : [[]];
   }, [allPrioridade]);
 
-  const totalSlides = 2 + clientsChunks.length;
+  const totalSlides = 1 + responsiblesChunks.length + clientsChunks.length;
 
   // Handle Fullscreen
   const toggleFullscreen = useCallback(() => {
