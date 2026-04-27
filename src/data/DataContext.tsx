@@ -346,7 +346,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     isMountedRef.current = true;
     if (isEditing) return;
     syncNow();
-    const interval = setInterval(syncNow, 10_000);
+    const interval = setInterval(() => {
+      if (!isEditing) {
+        syncNow();
+      }
+    }, 10_000);
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
