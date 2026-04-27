@@ -316,78 +316,56 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
 
             {/* Slides de Clientes em Atraso (Dinâmico) */}
             {currentSlide >= 1 + responsiblesChunks.length && (
-              <div className="space-y-8 h-full flex flex-col bg-red-500/5 -m-8 lg:-m-16 p-8 lg:p-16">
-                <header className="text-center">
-                  <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
-                    <AlertTriangle className="w-14 h-14 animate-pulse" />
+              <div className="w-full h-full flex flex-col items-center justify-center p-[2vh]">
+                <header className="text-center mb-[4vh]">
+                  <h1 className="text-[5vh] lg:text-[7vh] font-serif font-bold text-red-600 flex items-center justify-center gap-[2vw]">
+                    <AlertTriangle className="w-[6vh] h-[6vh] animate-pulse" />
                     Clientes em Atraso
-                    <AlertTriangle className="w-14 h-14 animate-pulse" />
+                    <AlertTriangle className="w-[6vh] h-[6vh] animate-pulse" />
                   </h1>
-                  <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
+                  <p className="text-[2vh] text-red-600/80 font-bold uppercase tracking-widest mt-[1vh]">
                     Página {currentSlide - responsiblesChunks.length} de {clientsChunks.length}
                   </p>
                 </header>
 
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden">
+                <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-[3vh] min-h-0 items-center">
                   {clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.length === 0 ? (
                     <div className="lg:col-span-2 flex items-center justify-center">
-                      <div className="bg-green-100 dark:bg-green-950/30 p-16 rounded-3xl border-4 border-green-500 text-center">
-                        <CheckCircle2 className="w-24 h-24 text-green-600 mx-auto mb-6" />
-                        <h3 className="text-4xl font-bold text-green-800 dark:text-green-300">
-                          Tudo em dia! Nenhum cliente requer atenção nesta página.
+                      <div className="bg-green-100 dark:bg-green-950/30 p-[8vh] rounded-[4vh] border-[0.5vh] border-green-500 text-center">
+                        <CheckCircle2 className="w-[10vh] h-[10vh] text-green-600 mx-auto mb-[3vh]" />
+                        <h3 className="text-[4vh] font-bold text-green-800 dark:text-green-300">
+                          Tudo em dia!
                         </h3>
                       </div>
                     </div>
                   ) : (
                     clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.map((c, idx) => {
-                      const isAtrasado = c.status === "Atrasado";
-                      const borderColor = isAtrasado ? "border-red-500" : c.status === "Pendente" ? "border-yellow-500" : "border-orange-500";
-                      const textColor = isAtrasado ? "text-red-600" : c.status === "Pendente" ? "text-yellow-600" : "text-orange-600";
-                      const bgRank = isAtrasado ? "bg-red-600" : c.status === "Pendente" ? "bg-yellow-600" : "bg-orange-600";
-                      
                       return (
                         <div
                           key={c.cliente}
-                          className={`bg-card p-8 rounded-3xl border-4 ${borderColor} shadow-2xl flex flex-col gap-6`}
+                          className="bg-card p-[3vh] rounded-[3vh] border-[0.3vh] border-red-500 shadow-2xl flex flex-col gap-[2vh] h-full max-h-[35vh]"
                         >
-                          <div className="flex items-center gap-8">
-                            <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
+                          <div className="flex items-center gap-[1.5vw]">
+                            <div className="w-[6vh] h-[6vh] shrink-0 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-[3vh] shadow-lg">
                               {((currentSlide - 1 - responsiblesChunks.length) * 4) + idx + 1}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
-                              <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                <StatusBadge status={c.status} />
-                                <span className="text-lg font-bold text-muted-foreground truncate">
-                                  {c.responsavel}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <div className={`text-5xl font-black ${textColor}`}>{c.pendentes}</div>
-                              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                Pendências
-                              </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-[3vh] font-black truncate">{c.cliente}</h3>
+                              <p className="text-[1.8vh] font-bold text-red-600 uppercase tracking-widest">{c.responsavel}</p>
                             </div>
                           </div>
 
-                          {(c.observacoes || (c.localObservacoes && c.localObservacoes.length > 0)) && (
-                            <div className="bg-muted/30 p-5 rounded-2xl border border-border/50">
-                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-                                <Users className="w-3.5 h-3.5" /> Observações do Cliente
-                              </p>
-                              <div className="space-y-3 max-h-[160px] overflow-y-auto pr-2">
-                                {c.observacoes && (
-                                  <p className="text-sm italic text-foreground/80 leading-relaxed border-l-2 border-primary/30 pl-3 py-1">
-                                    {c.observacoes}
-                                  </p>
-                                )}
-                                {c.localObservacoes?.map((obs, i) => (
-                                  <div key={i} className="text-sm text-foreground/80 leading-relaxed border-l-2 border-primary/30 pl-3 py-1">
-                                    <span className="font-bold text-[10px] uppercase text-primary block mb-0.5">{obs.author} • {obs.timestamp}</span>
-                                    {obs.text}
-                                  </div>
-                                ))}
+                          <div className="grid grid-cols-3 gap-[1.5vw] py-[1vh] border-y border-border">
+                            <MiniInfo label="Total" value={c.totalItems} />
+                            <MiniInfo label="Entregue" value={c.totalEntregues} />
+                            <MiniInfo label="Pendente" value={c.pendentes} />
+                          </div>
+
+                          {c.localObservacoes && c.localObservacoes.length > 0 && (
+                            <div className="bg-muted/50 p-[1.5vh] rounded-[1.5vh] border-l-[0.5vh] border-red-500 flex-1 min-h-0 overflow-hidden">
+                              <p className="text-[1.4vh] font-bold text-muted-foreground uppercase mb-[0.5vh]">Observações:</p>
+                              <div className="text-[1.6vh] italic text-foreground line-clamp-3">
+                                {c.localObservacoes.map((obs: any) => obs.text).join(" | ")}
                               </div>
                             </div>
                           )}
@@ -403,7 +381,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 bg-muted w-full relative">
+      <div className="h-[1vh] bg-muted w-full relative">
         <motion.div 
           className="h-full bg-primary"
           initial={{ width: "0%" }}
@@ -414,20 +392,20 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
       </div>
 
       {/* Footer */}
-      <footer className="h-20 border-t border-border flex items-center justify-between px-12 bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <img src={logo} alt="Logo" className="h-10 opacity-50" />
-          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Execução Marketing • Dashboard TV</p>
+      <footer className="h-[10vh] border-t border-border flex items-center justify-between px-[4vw] bg-card/50 backdrop-blur-sm">
+        <div className="flex items-center gap-[1vw]">
+          <img src={logo} alt="Logo" className="h-[5vh] opacity-50" />
+          <p className="text-[1.5vh] font-bold text-muted-foreground uppercase tracking-widest">Execução Marketing • Dashboard TV</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-[0.8vw]">
           {Array.from({ length: totalSlides }).map((_, i) => (
             <div 
               key={i} 
-              className={`h-3 w-3 rounded-full transition-all duration-300 ${i === currentSlide ? "bg-primary scale-150" : "bg-muted"}`} 
+              className={`h-[1.5vh] w-[1.5vh] rounded-full transition-all duration-300 ${i === currentSlide ? "bg-primary scale-150" : "bg-muted"}`} 
             />
           ))}
         </div>
-        <div className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+        <div className="text-[1.5vh] font-bold text-muted-foreground uppercase tracking-widest">
           {new Date().toLocaleDateString("pt-BR", { weekday: 'long', day: '2-digit', month: 'long' })}
         </div>
       </footer>
@@ -437,16 +415,42 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
 
 function KPISlideCard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) {
   return (
-    <div className="bg-card rounded-3xl p-10 border border-border shadow-2xl hover:border-primary/50 transition-all group">
-      <div className="flex items-start justify-between mb-8">
-        <div className={`p-4 rounded-2xl bg-muted group-hover:bg-primary/10 transition-colors`}>
-          <Icon className={`w-10 h-10 ${color}`} />
+    <div className="bg-card rounded-[3vh] p-[4vh] border border-border shadow-2xl hover:border-primary/50 transition-all group">
+      <div className="flex items-start justify-between mb-[3vh]">
+        <div className={`p-[1.5vh] rounded-[1.5vh] bg-muted group-hover:bg-primary/10 transition-colors`}>
+          <Icon className={`w-[4vh] h-[4vh] ${color}`} />
         </div>
       </div>
       <div>
-        <p className="text-lg font-bold text-muted-foreground uppercase tracking-wider mb-2">{title}</p>
-        <p className="text-7xl font-black">{value}</p>
+        <p className="text-[1.8vh] font-bold text-muted-foreground uppercase tracking-wider mb-[1vh]">{title}</p>
+        <p className="text-[7vh] font-black leading-none">{value}</p>
       </div>
+    </div>
+  );
+}
+
+function StatusMiniCard({ label, value, color }: { label: string, value: number, color: 'green' | 'red' | 'yellow' | 'blue' }) {
+  const colors = {
+    green: "bg-green-500/10 border-green-500/20 text-green-500 text-green-600/70",
+    red: "bg-red-500/10 border-red-500/20 text-red-500 text-red-600/70",
+    yellow: "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 text-yellow-600/70",
+    blue: "bg-blue-500/10 border-blue-500/20 text-blue-500 text-blue-600/70",
+  };
+  const [bg, border, text, labelCol] = colors[color].split(' ');
+  
+  return (
+    <div className={`${bg} p-[1.5vh] rounded-[2vh] border ${border} text-center flex flex-col justify-center`}>
+      <div className={`text-[3.5vh] font-black ${text}`}>{value}</div>
+      <div className={`text-[1vh] font-bold uppercase tracking-widest ${labelCol}`}>{label}</div>
+    </div>
+  );
+}
+
+function MiniInfo({ label, value }: { label: string, value: number }) {
+  return (
+    <div className="text-center">
+      <div className="text-[1.2vh] font-bold text-muted-foreground uppercase tracking-widest mb-[0.5vh]">{label}</div>
+      <div className="text-[2.5vh] font-black">{value}</div>
     </div>
   );
 }
