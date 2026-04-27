@@ -39,7 +39,7 @@ export default function ClientesPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState(initialCliente);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [obsDrafts, setObsDrafts] = useState<Record<string, string>>({});
+  
 
   useEffect(() => {
     if (initialCliente) {
