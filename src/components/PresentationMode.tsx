@@ -262,15 +262,15 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slide 2: Responsáveis */}
-            {currentSlide === 1 && (
+            {/* Slides de Responsáveis (Dinâmico) */}
+            {currentSlide >= 1 && currentSlide < 1 + responsiblesChunks.length && (
               <div className="space-y-8 h-full flex flex-col">
                 <header className="text-center">
                   <h1 className="text-5xl lg:text-6xl font-serif font-bold mb-2">Resumo por Responsável</h1>
-                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status</p>
+                  <p className="text-xl text-muted-foreground">Visão consolidada de carteira e status • Página {currentSlide} de {responsiblesChunks.length}</p>
                 </header>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-y-auto pr-2 pb-8">
-                  {porResponsavel.map((r) => {
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-hidden pb-8">
+                  {responsiblesChunks[currentSlide - 1]?.map((r) => {
                     const entreguesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Concluído").length;
                     const pendentesCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Pendente").length;
                     const emAndamentoCount = summaries.filter(s => (s.responsavel || "Sem responsável") === r.responsavel && s.status === "Em andamento").length;
@@ -323,8 +323,8 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
               </div>
             )}
 
-            {/* Slides 3+: Clientes que Requerem Maior Atenção (Dinâmico) */}
-            {currentSlide >= 2 && (
+            {/* Slides de Clientes em Atraso (Dinâmico) */}
+            {currentSlide >= 1 + responsiblesChunks.length && (
               <div className="space-y-8 h-full flex flex-col bg-red-500/5 -m-8 lg:-m-16 p-8 lg:p-16">
                 <header className="text-center">
                   <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
@@ -333,9 +333,10 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                     <AlertTriangle className="w-14 h-14 animate-pulse" />
                   </h1>
                   <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
-                    Página {currentSlide - 1} de {clientsChunks.length}
+                    Página {currentSlide - responsiblesChunks.length} de {clientsChunks.length}
                   </p>
                 </header>
+
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden">
                   {clientsChunks[currentSlide - 2]?.length === 0 ? (
                     <div className="lg:col-span-2 flex items-center justify-center">
