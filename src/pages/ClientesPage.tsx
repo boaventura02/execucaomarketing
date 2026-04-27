@@ -1,12 +1,15 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check } from "lucide-react";
-import { useData, type StatusGeral } from "@/data/DataContext";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check, Plus, MessageSquare } from "lucide-react";
+import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 function formatDate(d: string) {
   if (!d) return "—";
