@@ -97,19 +97,11 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
     return chunks.length > 0 ? chunks : [[]];
   }, [porResponsavel]);
 
-  // Max 4 clients per slide, or 2 if there are many observations
+  // Max 2 clients per slide for better visibility and fixed layout
   const clientsChunks = useMemo(() => {
     const chunks = [];
-    let i = 0;
-    while (i < allPrioridade.length) {
-      const hasLargeObs = allPrioridade.slice(i, i + 2).some(c => 
-        (c.observacoes && c.observacoes.length > 50) || 
-        (c.localObservacoes && c.localObservacoes.length > 0)
-      );
-      
-      const chunkSize = hasLargeObs ? 2 : 4;
-      chunks.push(allPrioridade.slice(i, i + chunkSize));
-      i += chunkSize;
+    for (let i = 0; i < allPrioridade.length; i += 2) {
+      chunks.push(allPrioridade.slice(i, i + 2));
     }
     return chunks.length > 0 ? chunks : [[]];
   }, [allPrioridade]);
