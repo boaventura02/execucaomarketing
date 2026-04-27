@@ -135,6 +135,7 @@ export function mapSheetToRows(matrix: string[][]): Omit<ClientRow, "id" | "cust
       prazoFinal: normalizeDate(cell(row, colPrazoFinal)),
       statusGeral: normalizeStatusGeral(cell(row, colStatusGeral)),
       observacoes: cell(row, colObs),
+      localObservacoes: [],
     });
   }
   return out;

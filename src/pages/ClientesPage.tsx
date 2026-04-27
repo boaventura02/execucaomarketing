@@ -1,16 +1,24 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check } from "lucide-react";
-import { useData, type StatusGeral } from "@/data/DataContext";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check, Plus, MessageSquare } from "lucide-react";
+import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 function formatDate(d: string) {
   if (!d) return "—";
   return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
+}
+
+function formatDateTime(d: string) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("pt-BR");
 }
 
 function rowAccent(status: StatusGeral) {
@@ -31,7 +39,7 @@ export default function ClientesPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState(initialCliente);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [obsDrafts, setObsDrafts] = useState<Record<string, string>>({});
+  
 
   useEffect(() => {
     if (initialCliente) {
@@ -107,10 +115,6 @@ export default function ClientesPage() {
                     <div className="grid gap-3">
                       {c.items.map(item => {
                         const fullRow = rows.find(r => r.id === item.rowId);
-                        const draft = obsDrafts[item.rowId];
-                        const currentObs = fullRow?.observacoes || "";
-                        const value = draft !== undefined ? draft : currentObs;
-                        const isDirty = draft !== undefined && draft !== currentObs;
                         return (
                           <div
                             key={item.rowId}
@@ -139,37 +143,96 @@ export default function ClientesPage() {
                               <StatusBadge status={item.statusGeral} size="sm" />
                             </div>
 
-                            <div>
-                              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                                Observações
-                              </label>
-                              <Textarea
-                                value={value}
-                                onChange={e => setObsDrafts(p => ({ ...p, [item.rowId]: e.target.value }))}
-                                placeholder="Adicione observações sobre este item…"
-                                className="text-sm bg-background min-h-[70px]"
-                              />
-                              {isDirty && (
-                                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-2">
-                                  <button
-                                    onClick={() => setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; })}
-                                    className="px-3 py-2 min-h-[40px] text-xs rounded-md border border-border hover:bg-accent transition-colors"
-                                  >
-                                    Cancelar
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      updateRow(item.rowId, { observacoes: draft! });
-                                      setObsDrafts(p => { const n = { ...p }; delete n[item.rowId]; return n; });
-                                      toast({ title: "Observação salva", description: `${item.tipo || "Item"} atualizado.` });
-                                    }}
-                                    className="px-3 py-2 min-h-[40px] text-xs rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 font-medium"
-                                  >
-                                    <Save className="w-3 h-3" />
-                                    Salvar
-                                  </button>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                                  Observações (Planilha)
+                                </label>
+                                <div className="p-3 rounded-md bg-secondary/50 text-sm text-card-foreground border border-border min-h-[40px] whitespace-pre-wrap">
+                                  {fullRow?.observacoes || <span className="text-muted-foreground italic">Sem observações na planilha.</span>}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-1 italic">
+                                  * Este campo é preenchido apenas pelo Google Sheets.
+                                </p>
+                              </div>
+
+                              {fullRow?.localObservacoes && fullRow.localObservacoes.length > 0 && (
+                                <div>
+                                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                                    Histórico de Observações Locais
+                                  </label>
+                                  <div className="space-y-2">
+                                    {fullRow.localObservacoes.map((obs, idx) => (
+                                      <div key={idx} className="p-3 rounded-md bg-background border border-border text-sm">
+                                        <div className="flex justify-between items-center mb-1 text-[10px] font-medium text-muted-foreground uppercase">
+                                          <span>{obs.author}</span>
+                                          <span>{formatDateTime(obs.timestamp)}</span>
+                                        </div>
+                                        <p className="text-card-foreground whitespace-pre-wrap">{obs.text}</p>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
+
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="w-full sm:w-auto flex gap-2">
+                                    <Plus className="w-4 h-4" />
+                                    Adicionar Observação Local
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                  <DialogHeader>
+                                    <DialogTitle>Nova Observação</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Seu nome (Autor)</label>
+                                      <Input 
+                                        placeholder="Digite seu nome..." 
+                                        id={`author-${item.rowId}`}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Observação</label>
+                                      <Textarea 
+                                        placeholder="Descreva a observação..." 
+                                        className="min-h-[100px]"
+                                        id={`text-${item.rowId}`}
+                                      />
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button onClick={() => {
+                                      const authorInput = document.getElementById(`author-${item.rowId}`) as HTMLInputElement;
+                                      const textInput = document.getElementById(`text-${item.rowId}`) as HTMLTextAreaElement;
+                                      
+                                      if (!authorInput.value || !textInput.value) {
+                                        toast({ title: "Erro", description: "Preencha o autor e a mensagem.", variant: "destructive" });
+                                        return;
+                                      }
+
+                                      const newObs: LocalObservation = {
+                                        author: authorInput.value,
+                                        text: textInput.value,
+                                        timestamp: new Date().toISOString()
+                                      };
+
+                                      updateRow(item.rowId, { 
+                                        localObservacoes: [...(fullRow?.localObservacoes || []), newObs] 
+                                      });
+                                      
+                                      authorInput.value = "";
+                                      textInput.value = "";
+                                      
+                                      toast({ title: "Sucesso", description: "Observação adicionada com sucesso." });
+                                    }}>
+                                      Adicionar
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                             </div>
                           </div>
                         );
