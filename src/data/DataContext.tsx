@@ -344,6 +344,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Polling: roda imediatamente e depois a cada 30s
   useEffect(() => {
     isMountedRef.current = true;
+    if (isEditing) return;
     syncNow();
     const interval = setInterval(syncNow, 10_000);
     return () => {
