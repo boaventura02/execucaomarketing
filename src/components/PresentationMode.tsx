@@ -338,7 +338,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                 </header>
 
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden">
-                  {clientsChunks[currentSlide - 2]?.length === 0 ? (
+                  {clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.length === 0 ? (
                     <div className="lg:col-span-2 flex items-center justify-center">
                       <div className="bg-green-100 dark:bg-green-950/30 p-16 rounded-3xl border-4 border-green-500 text-center">
                         <CheckCircle2 className="w-24 h-24 text-green-600 mx-auto mb-6" />
@@ -348,7 +348,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                       </div>
                     </div>
                   ) : (
-                    clientsChunks[currentSlide - 2]?.map((c, idx) => {
+                    clientsChunks[currentSlide - 1 - responsiblesChunks.length]?.map((c, idx) => {
                       const isAtrasado = c.status === "Atrasado";
                       const borderColor = isAtrasado ? "border-red-500" : c.status === "Pendente" ? "border-yellow-500" : "border-orange-500";
                       const textColor = isAtrasado ? "text-red-600" : c.status === "Pendente" ? "text-yellow-600" : "text-orange-600";
@@ -361,7 +361,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                         >
                           <div className="flex items-center gap-8">
                             <div className={`w-16 h-16 shrink-0 rounded-full ${bgRank} text-white flex items-center justify-center font-black text-3xl shadow-lg`}>
-                              {((currentSlide - 2) * 4) + idx + 1}
+                              {((currentSlide - 1 - responsiblesChunks.length) * 4) + idx + 1}
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className={`text-3xl font-black truncate ${textColor}`}>{c.cliente}</h3>
