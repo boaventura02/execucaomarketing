@@ -85,7 +85,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
         const score = (statusWeight[c.status] ?? 10) + pendentes * 5 + (100 - c.progresso) + hasObs;
         return { ...c, pendentes, score };
       })
-      .filter(c => c.status !== "Concluído" || (c.localObservacoes && c.localObservacoes.length > 0))
+      .filter(c => c.status === "Atrasado")
       .sort((a, b) => b.score - a.score);
   }, [summaries]);
 
@@ -321,7 +321,7 @@ export default function PresentationMode({ onExit }: { onExit: () => void }) {
                 <header className="text-center">
                   <h1 className="text-4xl lg:text-6xl font-serif font-bold text-red-600 mb-3 flex items-center justify-center gap-4">
                     <AlertTriangle className="w-14 h-14 animate-pulse" />
-                    Clientes que Requerem Atenção
+                    Clientes em Atraso
                     <AlertTriangle className="w-14 h-14 animate-pulse" />
                   </h1>
                   <p className="text-xl text-red-600/80 font-bold uppercase tracking-widest">
