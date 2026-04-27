@@ -417,6 +417,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
+      isEditing, setIsEditing,
     }}>
       {children}
     </DataContext.Provider>
