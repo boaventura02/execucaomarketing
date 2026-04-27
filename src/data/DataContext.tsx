@@ -156,6 +156,8 @@ interface DataContextType {
   syncError: string | null;
   syncNow: () => Promise<void>;
   sheetUrl: string;
+  isEditing: boolean;
+  setIsEditing: (editing: boolean) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -285,6 +287,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Persiste mudanças no localStorage
   React.useEffect(() => {
@@ -341,8 +344,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Polling: roda imediatamente e depois a cada 30s
   useEffect(() => {
     isMountedRef.current = true;
+    if (isEditing) return;
     syncNow();
-    const interval = setInterval(syncNow, 10_000);
+    const interval = setInterval(() => {
+      if (!isEditing) {
+        syncNow();
+      }
+    }, 10_000);
     return () => {
       isMountedRef.current = false;
       clearInterval(interval);
@@ -409,6 +417,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
+      isEditing, setIsEditing,
     }}>
       {children}
     </DataContext.Provider>
