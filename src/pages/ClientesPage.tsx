@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Save, Check, Plus, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus } from "lucide-react";
 import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -175,64 +175,11 @@ export default function ClientesPage() {
                                 </div>
                               )}
 
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="w-full sm:w-auto flex gap-2">
-                                    <Plus className="w-4 h-4" />
-                                    Adicionar Observação Local
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px]">
-                                  <DialogHeader>
-                                    <DialogTitle>Nova Observação</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-medium">Seu nome (Autor)</label>
-                                      <Input 
-                                        placeholder="Digite seu nome..." 
-                                        id={`author-${item.rowId}`}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-medium">Observação</label>
-                                      <Textarea 
-                                        placeholder="Descreva a observação..." 
-                                        className="min-h-[100px]"
-                                        id={`text-${item.rowId}`}
-                                      />
-                                    </div>
-                                  </div>
-                                  <DialogFooter>
-                                    <Button onClick={() => {
-                                      const authorInput = document.getElementById(`author-${item.rowId}`) as HTMLInputElement;
-                                      const textInput = document.getElementById(`text-${item.rowId}`) as HTMLTextAreaElement;
-                                      
-                                      if (!authorInput.value || !textInput.value) {
-                                        toast({ title: "Erro", description: "Preencha o autor e a mensagem.", variant: "destructive" });
-                                        return;
-                                      }
-
-                                      const newObs: LocalObservation = {
-                                        author: authorInput.value,
-                                        text: textInput.value,
-                                        timestamp: new Date().toISOString()
-                                      };
-
-                                      updateRow(item.rowId, { 
-                                        localObservacoes: [...(fullRow?.localObservacoes || []), newObs] 
-                                      });
-                                      
-                                      authorInput.value = "";
-                                      textInput.value = "";
-                                      
-                                      toast({ title: "Sucesso", description: "Observação adicionada com sucesso." });
-                                    }}>
-                                      Adicionar
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
+                              <ObservationDialog 
+                                rowId={item.rowId} 
+                                currentObservations={fullRow?.localObservacoes || []} 
+                                onUpdate={(newObs) => updateRow(item.rowId, { localObservacoes: newObs })}
+                              />
                             </div>
                           </div>
                         );
@@ -252,5 +199,80 @@ export default function ClientesPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+function ObservationDialog({ 
+  rowId, 
+  currentObservations, 
+  onUpdate 
+}: { 
+  rowId: string, 
+  currentObservations: LocalObservation[],
+  onUpdate: (obs: LocalObservation[]) => void
+}) {
+  const [author, setAuthor] = useState("");
+  const [text, setText] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const handleAdd = () => {
+    if (!author.trim() || !text.trim()) {
+      toast({ title: "Erro", description: "Preencha o autor e a mensagem.", variant: "destructive" });
+      return;
+    }
+
+    const newObs: LocalObservation = {
+      author,
+      text,
+      timestamp: new Date().toISOString()
+    };
+
+    onUpdate([...currentObservations, newObs]);
+    
+    setAuthor("");
+    setText("");
+    setOpen(false);
+    
+    toast({ title: "Sucesso", description: "Observação adicionada com sucesso." });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="w-full sm:w-auto flex gap-2">
+          <Plus className="w-4 h-4" />
+          Adicionar Observação Local
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Nova Observação</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Seu nome (Autor)</label>
+            <Input 
+              placeholder="Digite seu nome..." 
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Observação</label>
+            <Textarea 
+              placeholder="Descreva a observação..." 
+              className="min-h-[100px]"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={handleAdd}>
+            Adicionar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
