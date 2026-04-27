@@ -211,9 +211,14 @@ function ObservationDialog({
   currentObservations: LocalObservation[],
   onUpdate: (obs: LocalObservation[]) => void
 }) {
+  const { setIsEditing } = useData();
   const [author, setAuthor] = useState("");
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setIsEditing(open);
+  }, [open, setIsEditing]);
 
   const handleAdd = () => {
     if (!author.trim() || !text.trim()) {
