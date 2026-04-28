@@ -230,6 +230,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       aprovadoPor: first.autorizadoPor || "",
       observacoes: first.observacoes || "",
       localObservacoes: first.localObservacoes || [],
+      congelado: !!first.congelado,
     };
   });
 
