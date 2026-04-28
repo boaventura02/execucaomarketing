@@ -80,6 +80,15 @@ export default function ClientesPage() {
             <option value="">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <button
+            type="button"
+            onClick={() => setShowCongelados(v => !v)}
+            className={`px-3 py-2.5 min-h-[44px] text-sm rounded-lg border transition-colors flex items-center gap-2 w-full sm:w-auto justify-center ${showCongelados ? "border-blue-400 bg-blue-400/10 text-blue-400" : "border-border bg-card text-foreground hover:bg-accent/40"}`}
+            title="Mostrar/ocultar clientes congelados"
+          >
+            <Snowflake className="w-4 h-4" />
+            {showCongelados ? "Mostrando congelados" : `Congelados (${congeladosCount})`}
+          </button>
         </div>
 
         <div className="space-y-3">
@@ -95,7 +104,10 @@ export default function ClientesPage() {
                     {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-card-foreground truncate">{c.cliente}</p>
+                    <p className="font-semibold text-card-foreground truncate flex items-center gap-2">
+                      {c.congelado && <Snowflake className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                      {c.cliente}
+                    </p>
                     <div className="flex items-center gap-2 sm:gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsavel}</span>
                       {c.aprovadoPor && (
@@ -108,6 +120,23 @@ export default function ClientesPage() {
                   <div className="hidden md:block w-44">
                     <ProgressBar value={c.progresso} />
                   </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCongelarCliente(c.cliente);
+                      toast({
+                        title: c.congelado ? "Cliente descongelado" : "Cliente congelado",
+                        description: c.congelado
+                          ? `${c.cliente} voltou para a lista ativa.`
+                          : `${c.cliente} foi marcado como congelado.`,
+                      });
+                    }}
+                    className={`flex-shrink-0 p-2 rounded-md transition-colors ${c.congelado ? "bg-blue-400/20 text-blue-400 hover:bg-blue-400/30" : "text-muted-foreground hover:bg-accent hover:text-blue-400"}`}
+                    title={c.congelado ? "Descongelar cliente" : "Congelar cliente"}
+                  >
+                    <Snowflake className="w-4 h-4" />
+                  </button>
                   <StatusBadge status={c.status} size="sm" />
                 </button>
 
