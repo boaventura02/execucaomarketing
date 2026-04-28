@@ -147,6 +147,7 @@ interface DataContextType {
   updateRowCustom: (id: string, columnId: string, value: string) => void;
   addRow: () => void;
   deleteRow: (id: string) => void;
+  toggleCongelarCliente: (cliente: string) => void;
   renameColumn: (columnId: string, newLabel: string) => void;
   addCustomColumn: (label: string, type?: ColumnType) => void;
   deleteCustomColumn: (columnId: string) => void;
@@ -392,6 +393,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setRows(prev => prev.filter(r => r.id !== id));
   }, []);
 
+  const toggleCongelarCliente = useCallback((cliente: string) => {
+    setRows(prev => {
+      const isCurrentlyFrozen = prev.some(r => r.cliente === cliente && r.congelado);
+      const newValue = !isCurrentlyFrozen;
+      return prev.map(r => r.cliente === cliente ? { ...r, congelado: newValue } : r);
+    });
+  }, []);
+
   const renameColumn = useCallback((columnId: string, newLabel: string) => {
     setColumns(prev => prev.map(c => c.id === columnId ? { ...c, label: newLabel } : c));
   }, []);
@@ -426,7 +435,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   return (
     <DataContext.Provider value={{
       rows, columns, setRows,
-      updateRow, updateRowCustom, addRow, deleteRow,
+      updateRow, updateRowCustom, addRow, deleteRow, toggleCongelarCliente,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
