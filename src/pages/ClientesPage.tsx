@@ -96,9 +96,12 @@ export default function ClientesPage() {
             const isOpen = !!expanded[c.cliente];
             return (
               <div key={c.cliente} className={`bg-card rounded-xl border border-border shadow-sm overflow-hidden border-l-4 ${rowAccent(c.status)}`}>
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => toggle(c.cliente)}
-                  className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/40 transition-colors text-left min-h-[60px]"
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(c.cliente); } }}
+                  className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/40 transition-colors text-left min-h-[60px] cursor-pointer"
                 >
                   <div className="flex-shrink-0 text-muted-foreground">
                     {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
@@ -138,7 +141,7 @@ export default function ClientesPage() {
                     <Snowflake className="w-4 h-4" />
                   </button>
                   <StatusBadge status={c.status} size="sm" />
-                </button>
+                </div>
 
                 {isOpen && (
                   <div className="border-t border-border bg-secondary/30 px-4 sm:px-5 py-4">
