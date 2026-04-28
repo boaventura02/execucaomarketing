@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, User, Layers, Check, Plus, Trash2, Snowflake } from "lucide-react";
 import { useData, type StatusGeral, type LocalObservation } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -34,7 +34,8 @@ export default function ClientesPage() {
   const [searchParams] = useSearchParams();
   const initialCliente = searchParams.get("cliente") || "";
   
-  const { summaries, allResponsaveis, allStatuses, rows, updateRow } = useData();
+  const { summaries, allResponsaveis, allStatuses, rows, updateRow, toggleCongelarCliente } = useData();
+  const [showCongelados, setShowCongelados] = useState(false);
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState(initialCliente);
