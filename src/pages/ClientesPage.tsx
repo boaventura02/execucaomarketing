@@ -50,12 +50,15 @@ export default function ClientesPage() {
 
   const filtered = useMemo(() => {
     return summaries.filter(c => {
+      if (showCongelados ? !c.congelado : c.congelado) return false;
       if (filterResp && c.responsavel !== filterResp) return false;
       if (filterStatus && c.status !== filterStatus) return false;
       if (filterCliente && !c.cliente.toLowerCase().includes(filterCliente.toLowerCase())) return false;
       return true;
     });
-  }, [summaries, filterResp, filterStatus, filterCliente]);
+  }, [summaries, filterResp, filterStatus, filterCliente, showCongelados]);
+
+  const congeladosCount = useMemo(() => summaries.filter(c => c.congelado).length, [summaries]);
 
   const toggle = (cliente: string) => setExpanded(p => ({ ...p, [cliente]: !p[cliente] }));
 
