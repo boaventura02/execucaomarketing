@@ -27,6 +27,8 @@ export interface ClientRow {
   prazoFinal: string;
   observacoes: string;
   localObservacoes: LocalObservation[];
+  /** Cliente congelado (não estamos seguindo com o trabalho dele) */
+  congelado?: boolean;
   /** Valores das colunas customizadas, indexados por columnId */
   custom: Record<string, string>;
 }
@@ -50,6 +52,7 @@ export interface ClientSummary {
   aprovadoPor: string;
   observacoes: string;
   localObservacoes: LocalObservation[];
+  congelado: boolean;
 }
 
 export type ColumnKind = "base" | "custom";
