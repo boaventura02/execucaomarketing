@@ -329,11 +329,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return fetched.map((d, i) => {
           const key = `${d.cliente}||${d.tipoConteudo}||${d.quantidadeContratada}`;
           const local = localByKey.get(key);
+          // Estado de congelado é por cliente: se qualquer linha local desse cliente está congelada, mantém
+          const clienteCongelado = prev.some(r => r.cliente === d.cliente && r.congelado);
           return {
             ...d,
             // A planilha é a fonte da verdade para observacoes da planilha.
             // Preservamos o histórico local que não está na planilha.
             localObservacoes: local?.localObservacoes || [],
+            congelado: clienteCongelado,
             id: genId(),
             custom: local?.custom ?? prev[i]?.custom ?? {},
           };
