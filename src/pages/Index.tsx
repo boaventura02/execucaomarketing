@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Loader2, Eye, Snowflake, X } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useData, type StatusGeral } from "@/data/DataContext";
 import { AppLayout } from "@/components/AppLayout";
@@ -16,27 +16,44 @@ const STATUS_COLORS: Record<string, string> = {
   "Pendente": "#eab308",
 };
 
+type KpiFilter = "all" | "Concluído" | "Atrasado" | "Em andamento" | "Revisão" | "Pendente" | "Congelado";
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { summaries, allResponsaveis, allStatuses } = useData();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
+  const [kpiFilter, setKpiFilter] = useState<KpiFilter>("all");
+
+  // Lista base sem congelados (a menos que o usuário escolha ver congelados)
+  const baseList = useMemo(() => {
+    return summaries.filter(c => {
+      if (kpiFilter === "Congelado") return c.congelado;
+      return !c.congelado;
+    });
+  }, [summaries, kpiFilter]);
 
   const filtered = useMemo(() => {
-    return summaries.filter(c => {
+    return baseList.filter(c => {
       if (filterResp && c.responsavel !== filterResp) return false;
       if (filterStatus && c.status !== filterStatus) return false;
       if (filterCliente && !c.cliente.toLowerCase().includes(filterCliente.toLowerCase())) return false;
+      if (kpiFilter !== "all" && kpiFilter !== "Congelado" && c.status !== kpiFilter) return false;
       return true;
     });
-  }, [summaries, filterResp, filterStatus, filterCliente]);
+  }, [baseList, filterResp, filterStatus, filterCliente, kpiFilter]);
 
-  const totalClientes = filtered.length;
-  const entregues = filtered.filter(c => c.status === "Concluído").length;
-  const atrasados = filtered.filter(c => c.status === "Atrasado").length;
-  const pendentes = filtered.filter(c => c.status !== "Concluído" && c.status !== "Atrasado").length;
-  const avgProgress = totalClientes > 0 ? Math.round(filtered.reduce((s, c) => s + c.progresso, 0) / totalClientes) : 0;
+  // KPIs sempre baseados no conjunto não-congelado (independente do kpiFilter)
+  const kpiBase = useMemo(() => summaries.filter(c => !c.congelado), [summaries]);
+  const totalClientes = kpiBase.length;
+  const entregues = kpiBase.filter(c => c.status === "Concluído").length;
+  const atrasados = kpiBase.filter(c => c.status === "Atrasado").length;
+  const emAndamento = kpiBase.filter(c => c.status === "Em andamento").length;
+  const emRevisao = kpiBase.filter(c => c.status === "Revisão").length;
+  const pendentes = kpiBase.filter(c => c.status === "Pendente").length;
+  const congelados = useMemo(() => summaries.filter(c => c.congelado).length, [summaries]);
+  const avgProgress = filtered.length > 0 ? Math.round(filtered.reduce((s, c) => s + c.progresso, 0) / filtered.length) : 0;
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -57,6 +74,10 @@ export default function Dashboard() {
       entregue: c.totalEntregues,
     }));
   }, [filtered]);
+
+  const handleKpiClick = (target: KpiFilter) => {
+    setKpiFilter(prev => (prev === target ? "all" : target));
+  };
 
   return (
     <AppLayout>
@@ -82,14 +103,39 @@ export default function Dashboard() {
             <option value="">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          {kpiFilter !== "all" && (
+            <button
+              onClick={() => setKpiFilter("all")}
+              className="px-3 py-2.5 min-h-[44px] text-sm rounded-lg border border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              Filtro: {kpiFilter}
+            </button>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
-          <KpiCard title="Entregues" value={entregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={80} />
-          <KpiCard title="Pendentes" value={pendentes} icon={Clock} color="text-status-pending" bgColor="bg-status-pending-bg" delay={160} />
-          <KpiCard title="Atrasados" value={atrasados} icon={AlertTriangle} color="text-status-late" bgColor="bg-status-late-bg" delay={240} />
-          <KpiCard title="Progresso Médio" value={`${avgProgress}%`} icon={TrendingUp} color="text-primary" bgColor="bg-primary/10" delay={320} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <ClickableKpi active={kpiFilter === "all"} onClick={() => handleKpiClick("all")}>
+            <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Concluído"} onClick={() => handleKpiClick("Concluído")}>
+            <KpiCard title="Entregues" value={entregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={60} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Em andamento"} onClick={() => handleKpiClick("Em andamento")}>
+            <KpiCard title="Em andamento" value={emAndamento} icon={Loader2} color="text-status-inprogress" bgColor="bg-status-inprogress-bg" delay={120} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Revisão"} onClick={() => handleKpiClick("Revisão")}>
+            <KpiCard title="Em revisão" value={emRevisao} icon={Eye} color="text-status-review" bgColor="bg-status-review-bg" delay={180} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Pendente"} onClick={() => handleKpiClick("Pendente")}>
+            <KpiCard title="Pendentes" value={pendentes} icon={Clock} color="text-status-pending" bgColor="bg-status-pending-bg" delay={240} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Atrasado"} onClick={() => handleKpiClick("Atrasado")}>
+            <KpiCard title="Atrasados" value={atrasados} icon={AlertTriangle} color="text-status-late" bgColor="bg-status-late-bg" delay={300} />
+          </ClickableKpi>
+          <ClickableKpi active={kpiFilter === "Congelado"} onClick={() => handleKpiClick("Congelado")}>
+            <KpiCard title="Congelados" value={congelados} icon={Snowflake} color="text-blue-400" bgColor="bg-blue-400/10" delay={360} />
+          </ClickableKpi>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -152,19 +198,28 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-border">
-            <h3 className="text-sm font-semibold text-card-foreground">Visão Geral dos Clientes</h3>
+          <div className="p-5 border-b border-border flex items-center justify-between flex-wrap gap-2">
+            <h3 className="text-sm font-semibold text-card-foreground">
+              Visão Geral dos Clientes
+              {kpiFilter !== "all" && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">— filtrado por {kpiFilter}</span>
+              )}
+            </h3>
+            <span className="text-xs text-muted-foreground">{filtered.length} cliente(s) · Progresso médio {avgProgress}%</span>
           </div>
           <div className="divide-y divide-border">
             {filtered.map(c => (
               <div 
                 key={c.cliente} 
-                className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/50 transition-colors cursor-pointer ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""}`}
+                className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-accent/50 transition-colors cursor-pointer ${c.status === "Atrasado" ? "bg-status-late-bg/30" : ""} ${c.congelado ? "opacity-70" : ""}`}
                 onClick={() => navigate(`/clientes?cliente=${encodeURIComponent(c.cliente)}`)}
               >
                 <div className="flex items-center justify-between gap-3 sm:flex-1 min-w-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-card-foreground truncate">{c.cliente}</p>
+                    <p className="text-sm font-semibold text-card-foreground truncate flex items-center gap-2">
+                      {c.congelado && <Snowflake className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
+                      {c.cliente}
+                    </p>
                     <p className="text-xs text-muted-foreground truncate">{c.responsavel}</p>
                   </div>
                   <div className="sm:hidden flex-shrink-0">
@@ -186,5 +241,17 @@ export default function Dashboard() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+function ClickableKpi({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`text-left rounded-xl transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active ? "ring-2 ring-primary shadow-md" : ""}`}
+    >
+      {children}
+    </button>
   );
 }

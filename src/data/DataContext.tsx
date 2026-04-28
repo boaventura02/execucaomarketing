@@ -27,6 +27,8 @@ export interface ClientRow {
   prazoFinal: string;
   observacoes: string;
   localObservacoes: LocalObservation[];
+  /** Cliente congelado (não estamos seguindo com o trabalho dele) */
+  congelado?: boolean;
   /** Valores das colunas customizadas, indexados por columnId */
   custom: Record<string, string>;
 }
@@ -50,6 +52,7 @@ export interface ClientSummary {
   aprovadoPor: string;
   observacoes: string;
   localObservacoes: LocalObservation[];
+  congelado: boolean;
 }
 
 export type ColumnKind = "base" | "custom";
@@ -144,6 +147,7 @@ interface DataContextType {
   updateRowCustom: (id: string, columnId: string, value: string) => void;
   addRow: () => void;
   deleteRow: (id: string) => void;
+  toggleCongelarCliente: (cliente: string) => void;
   renameColumn: (columnId: string, newLabel: string) => void;
   addCustomColumn: (label: string, type?: ColumnType) => void;
   deleteCustomColumn: (columnId: string) => void;
@@ -227,6 +231,7 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       aprovadoPor: first.autorizadoPor || "",
       observacoes: first.observacoes || "",
       localObservacoes: first.localObservacoes || [],
+      congelado: !!first.congelado,
     };
   });
 
@@ -324,11 +329,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return fetched.map((d, i) => {
           const key = `${d.cliente}||${d.tipoConteudo}||${d.quantidadeContratada}`;
           const local = localByKey.get(key);
+          // Estado de congelado é por cliente: se qualquer linha local desse cliente está congelada, mantém
+          const clienteCongelado = prev.some(r => r.cliente === d.cliente && r.congelado);
           return {
             ...d,
             // A planilha é a fonte da verdade para observacoes da planilha.
             // Preservamos o histórico local que não está na planilha.
             localObservacoes: local?.localObservacoes || [],
+            congelado: clienteCongelado,
             id: genId(),
             custom: local?.custom ?? prev[i]?.custom ?? {},
           };
@@ -388,6 +396,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setRows(prev => prev.filter(r => r.id !== id));
   }, []);
 
+  const toggleCongelarCliente = useCallback((cliente: string) => {
+    setRows(prev => {
+      const isCurrentlyFrozen = prev.some(r => r.cliente === cliente && r.congelado);
+      const newValue = !isCurrentlyFrozen;
+      return prev.map(r => r.cliente === cliente ? { ...r, congelado: newValue } : r);
+    });
+  }, []);
+
   const renameColumn = useCallback((columnId: string, newLabel: string) => {
     setColumns(prev => prev.map(c => c.id === columnId ? { ...c, label: newLabel } : c));
   }, []);
@@ -422,7 +438,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   return (
     <DataContext.Provider value={{
       rows, columns, setRows,
-      updateRow, updateRowCustom, addRow, deleteRow,
+      updateRow, updateRowCustom, addRow, deleteRow, toggleCongelarCliente,
       renameColumn, addCustomColumn, deleteCustomColumn,
       summaries, allResponsaveis, allStatuses, getCellValue,
       syncStatus, lastSync, syncError, syncNow, sheetUrl: SHEET_URL,
