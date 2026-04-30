@@ -22,7 +22,10 @@ const AgendaPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+  const [recordingToComplete, setRecordingToComplete] = useState<Recording | null>(null);
   const [editingRecording, setEditingRecording] = useState<Recording | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -35,6 +38,7 @@ const AgendaPage = () => {
     priority: "OK" as RecordingPriority,
     scriptStatus: "Pendente"
   });
+
 
   const resetForm = () => {
     setFormData({
@@ -82,6 +86,25 @@ const AgendaPage = () => {
     setIsDialogOpen(true);
   };
 
+  const handleCompleteRecording = (recording: Recording) => {
+    setRecordingToComplete(recording);
+    setFormData({
+      ...formData,
+      recordedVideos: recording.plannedVideos || 0
+    });
+    setIsCompletionDialogOpen(true);
+  };
+
+  const confirmCompletion = () => {
+    if (!recordingToComplete) return;
+    updateRecording(recordingToComplete.id, {
+      status: "Concluído",
+      recordedVideos: formData.recordedVideos
+    });
+    setIsCompletionDialogOpen(false);
+    setRecordingToComplete(null);
+  };
+
   // Calendar Logic
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -89,8 +112,13 @@ const AgendaPage = () => {
 
   const getDayRecordings = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return recordings.filter(r => r.date === dateStr);
+    return recordings.filter(r => r.date === dateStr && (
+      !searchTerm || 
+      r.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.topic && r.topic.toLowerCase().includes(searchTerm.toLowerCase()))
+    ));
   };
+
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -132,13 +160,23 @@ const AgendaPage = () => {
             <p className="text-muted-foreground text-sm">Gestão inteligente de produção de vídeos</p>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            <div className="bg-muted rounded-lg p-1 flex items-center">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Input
+                placeholder="Pesquisar cliente ou tema..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+              <Info className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            </div>
+
+            <div className="bg-muted rounded-lg p-1 flex items-center w-full sm:w-auto">
               <Button 
                 variant={view === "calendar" ? "secondary" : "ghost"} 
                 size="sm" 
                 onClick={() => setView("calendar")}
-                className="px-3"
+                className="flex-1 sm:flex-none px-3"
               >
                 <CalendarIcon className="w-4 h-4 mr-2" />
                 Calendário
@@ -147,12 +185,13 @@ const AgendaPage = () => {
                 variant={view === "list" ? "secondary" : "ghost"} 
                 size="sm" 
                 onClick={() => setView("list")}
-                className="px-3"
+                className="flex-1 sm:flex-none px-3"
               >
                 <List className="w-4 h-4 mr-2" />
                 Lista
               </Button>
             </div>
+
 
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
               setIsDialogOpen(open);
@@ -270,10 +309,122 @@ const AgendaPage = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <Dialog open={isCompletionDialogOpen} onOpenChange={setIsCompletionDialogOpen}>
+              <DialogContent className="sm:max-w-[400px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    Concluir Gravação
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="text-sm text-muted-foreground">
+                    Você está concluindo a gravação de <span className="font-bold text-foreground">{recordingToComplete?.clientName}</span>.
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Vídeos Gravados</Label>
+                    <Input 
+                      type="number" 
+                      className="col-span-3" 
+                      value={formData.recordedVideos}
+                      onChange={(e) => setFormData({...formData, recordedVideos: parseInt(e.target.value) || 0})}
+                      autoFocus
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic text-center">
+                    Este valor será somado ao total de produção mensal do cliente.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCompletionDialogOpen(false)}>Voltar</Button>
+                  <Button className="bg-green-600 hover:bg-green-700" onClick={confirmCompletion}>
+                    Confirmar e Concluir
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+
+        {/* Daily Board - Trello Style */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Agendados para Hoje ({format(new Date(), "dd 'de' MMMM", { locale: ptBR })})
+            </h3>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {getDayRecordings(new Date()).length === 0 ? (
+              <div className="w-full py-8 text-center bg-muted/20 rounded-lg border-2 border-dashed border-muted flex flex-col items-center justify-center text-muted-foreground">
+                <Info className="w-8 h-8 mb-2 opacity-20" />
+                <p>Nenhuma gravação agendada para hoje</p>
+              </div>
+            ) : (
+              getDayRecordings(new Date()).map(rec => (
+                <Card 
+                  key={rec.id} 
+                  className={`min-w-[280px] max-w-[280px] shrink-0 border-l-4 shadow-sm hover:shadow-md transition-all ${
+                    rec.status === "Concluído" ? "border-l-green-500 bg-green-50/30" :
+                    rec.priority === "Urgente" ? "border-l-red-500 bg-red-50/30" : 
+                    rec.priority === "Atenção" ? "border-l-yellow-500 bg-yellow-50/30" : 
+                    "border-l-blue-500 bg-blue-50/30"
+                  }`}
+                >
+                  <CardHeader className="p-4 pb-2">
+                    <div className="flex justify-between items-start">
+                      <Badge variant={rec.status === "Concluído" ? "outline" : "default"} className={
+                        rec.status === "Concluído" ? "bg-green-100 text-green-700 border-green-200" :
+                        rec.priority === "Urgente" ? "bg-red-100 text-red-700 border-red-200" : 
+                        rec.priority === "Atenção" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : 
+                        "bg-blue-100 text-blue-700 border-blue-200"
+                      }>
+                        {rec.status}
+                      </Badge>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(rec)}>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteRecording(rec.id)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <CardTitle className="text-base font-bold mt-2 truncate">{rec.clientName}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 space-y-3">
+                    <p className="text-sm text-muted-foreground italic truncate">
+                      {rec.topic || "Sem tema definido"}
+                    </p>
+                    <div className="flex items-center justify-between text-xs font-medium bg-white/50 p-2 rounded">
+                      <span className="flex items-center gap-1">
+                        <Video className="w-3.5 h-3.5" />
+                        {rec.recordedVideos}/{rec.plannedVideos} vídeos
+                      </span>
+                      {rec.status !== "Concluído" && (
+                        <Button 
+                          size="sm" 
+                          variant="default" 
+                          className="h-8 bg-green-600 hover:bg-green-700"
+                          onClick={() => handleCompleteRecording(rec)}
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                          Concluir
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 
         {view === "calendar" ? (
+
           <Card className="border-sidebar-border shadow-sm overflow-hidden">
             <CardHeader className="bg-sidebar/50 border-b py-3 flex flex-row items-center justify-between">
               <div className="flex items-center gap-4">
@@ -337,19 +488,38 @@ const AgendaPage = () => {
                               e.stopPropagation();
                               handleEditClick(rec);
                             }}
-                            className={`text-[10px] p-1 rounded border truncate shadow-sm transition-transform hover:scale-[1.02] ${
+                            className={`group relative text-[10px] p-1 rounded border truncate shadow-sm transition-transform hover:scale-[1.02] ${
+                              rec.status === "Concluído" ? "bg-slate-50 border-slate-200 text-slate-500" :
                               rec.priority === "Urgente" ? "bg-red-50 border-red-200 text-red-700" : 
                               rec.priority === "Atenção" ? "bg-yellow-50 border-yellow-200 text-yellow-700" : 
                               "bg-green-50 border-green-200 text-green-700"
                             }`}
                           >
-                            <span className="font-bold">{rec.clientName}</span>
+                            <div className="flex items-center gap-1">
+                              {rec.status === "Concluído" && <CheckCircle2 className="w-2.5 h-2.5 text-green-600 shrink-0" />}
+                              <span className={`font-bold truncate ${rec.status === "Concluído" ? "line-through opacity-60" : ""}`}>
+                                {rec.clientName}
+                              </span>
+                            </div>
                             <div className="flex justify-between opacity-80">
-                              <span>{rec.topic || "Sem tema"}</span>
+                              <span className="truncate">{rec.topic || "Sem tema"}</span>
                               <span>{rec.recordedVideos}/{rec.plannedVideos}</span>
                             </div>
+                            
+                            {rec.status !== "Concluído" && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteRecording(rec);
+                                }}
+                                className="absolute -right-1 -top-1 bg-green-600 text-white rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                              </button>
+                            )}
                           </div>
                         ))}
+
                       </div>
                     </div>
                   );
