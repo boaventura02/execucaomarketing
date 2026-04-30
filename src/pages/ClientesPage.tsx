@@ -169,7 +169,14 @@ export default function ClientesPage() {
                                   <span className="text-muted-foreground">Status Entrega:</span>{" "}
                                   <span className="font-medium text-card-foreground">{fullRow?.statusEntrega || "—"}</span>
                                 </div>
+                                {fullRow?.videosGravados !== undefined && (
+                                  <div className="text-sm">
+                                    <span className="text-muted-foreground">Gravados (Mês):</span>{" "}
+                                    <span className="font-bold text-green-600">{fullRow.videosGravados}</span>
+                                  </div>
+                                )}
                                 {fullRow?.autorizadoPor && (
+
                                   <div className="text-sm">
                                     <span className="text-muted-foreground">Aprovado por:</span>{" "}
                                     <span className="font-medium text-card-foreground">{fullRow.autorizadoPor}</span>
