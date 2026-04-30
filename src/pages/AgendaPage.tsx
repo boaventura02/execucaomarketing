@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useRecordings, Recording, RecordingStatus, RecordingPriority, RecordingFrequency, ClientRecordingStatus } from "@/data/RecordingContext";
 import { useData } from "@/data/DataContext";
 import { Calendar as CalendarIcon, List, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Save, X, AlertCircle, CheckCircle2, Video, Clock, Info } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, parseISO, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -366,78 +366,94 @@ const AgendaPage = () => {
         </div>
 
 
-        {/* Daily Board - Trello Style */}
+        {/* Weekly Board - Trello Style */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Agendados para Hoje ({format(new Date(), "dd 'de' MMMM", { locale: ptBR })})
+              Quadro de Produção Semanal
             </h3>
           </div>
           
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-            {getDayRecordings(new Date()).length === 0 ? (
-              <div className="w-full py-8 text-center bg-muted/20 rounded-lg border-2 border-dashed border-muted flex flex-col items-center justify-center text-muted-foreground">
-                <Info className="w-8 h-8 mb-2 opacity-20" />
-                <p>Nenhuma gravação agendada para hoje</p>
-              </div>
-            ) : (
-              getDayRecordings(new Date()).map(rec => (
-                <Card 
-                  key={rec.id} 
-                  className={`min-w-[280px] max-w-[280px] shrink-0 border-l-4 shadow-sm hover:shadow-md transition-all ${
-                    rec.status === "Concluído" ? "border-l-green-500 bg-green-50/30" :
-                    rec.priority === "Urgente" ? "border-l-red-500 bg-red-50/30" : 
-                    rec.priority === "Atenção" ? "border-l-yellow-500 bg-yellow-50/30" : 
-                    "border-l-blue-500 bg-blue-50/30"
-                  }`}
-                >
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex justify-between items-start">
-                      <Badge variant={rec.status === "Concluído" ? "outline" : "default"} className={
-                        rec.status === "Concluído" ? "bg-green-100 text-green-700 border-green-200" :
-                        rec.priority === "Urgente" ? "bg-red-100 text-red-700 border-red-200" : 
-                        rec.priority === "Atenção" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : 
-                        "bg-blue-100 text-blue-700 border-blue-200"
-                      }>
-                        {rec.status}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(rec)}>
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteRecording(rec.id)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    <CardTitle className="text-base font-bold mt-2 truncate">{rec.clientName}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 space-y-3">
-                    <p className="text-sm text-muted-foreground italic truncate">
-                      {rec.topic || "Sem tema definido"}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            {eachDayOfInterval({
+              start: startOfWeek(new Date(), { weekStartsOn: 0 }),
+              end: endOfWeek(new Date(), { weekStartsOn: 0 })
+            }).map((day, index) => {
+              const dayRecs = getDayRecordings(day);
+              const isDayToday = isToday(day);
+              
+              return (
+                <div key={index} className="flex flex-col gap-3 min-w-[150px]">
+                  <div className={`p-2 rounded-t-lg border-b-2 text-center ${isDayToday ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-muted"}`}>
+                    <p className="text-[10px] uppercase font-bold tracking-wider leading-none">
+                      {format(day, "EEEE", { locale: ptBR })}
                     </p>
-                    <div className="flex items-center justify-between text-xs font-medium bg-white/50 p-2 rounded">
-                      <span className="flex items-center gap-1">
-                        <Video className="w-3.5 h-3.5" />
-                        {rec.recordedVideos}/{rec.plannedVideos} vídeos
-                      </span>
-                      {rec.status !== "Concluído" && (
-                        <Button 
-                          size="sm" 
-                          variant="default" 
-                          className="h-8 bg-green-600 hover:bg-green-700"
-                          onClick={() => handleCompleteRecording(rec)}
+                    <p className="text-sm font-bold">
+                      {format(day, "dd/MM")}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2 min-h-[100px]">
+                    {dayRecs.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center border-2 border-dashed border-muted/50 rounded-b-lg p-2">
+                        <span className="text-[10px] text-muted-foreground italic text-center">Nenhum agendamento</span>
+                      </div>
+                    ) : (
+                      dayRecs.map(rec => (
+                        <Card 
+                          key={rec.id} 
+                          className={`border-l-4 shadow-sm hover:shadow-md transition-all ${
+                            rec.status === "Concluído" ? "border-l-green-500 bg-green-50/30 opacity-70" :
+                            rec.priority === "Urgente" ? "border-l-red-500 bg-red-50/30" : 
+                            rec.priority === "Atenção" ? "border-l-yellow-500 bg-yellow-50/30" : 
+                            "border-l-blue-500 bg-blue-50/30"
+                          }`}
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                          Concluir
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                          <div className="p-2 space-y-2">
+                            <div className="flex justify-between items-start gap-1">
+                              <span className={`text-[11px] font-bold leading-tight ${rec.status === "Concluído" ? "line-through" : ""}`}>
+                                {rec.clientName}
+                              </span>
+                              <div className="flex gap-0.5 shrink-0">
+                                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditClick(rec)}>
+                                  <Edit2 className="w-2.5 h-2.5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => deleteRecording(rec.id)}>
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <p className="text-[10px] text-muted-foreground italic line-clamp-2">
+                              {rec.topic || "Sem tema"}
+                            </p>
+                            
+                            <div className="flex items-center justify-between gap-1 pt-1">
+                              <span className="text-[9px] font-medium flex items-center gap-0.5">
+                                <Video className="w-3 h-3" />
+                                {rec.recordedVideos}/{rec.plannedVideos}
+                              </span>
+                              
+                              {rec.status !== "Concluído" && (
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 p-0 bg-green-600 text-white hover:bg-green-700 rounded-full"
+                                  onClick={() => handleCompleteRecording(rec)}
+                                >
+                                  <CheckCircle2 className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
