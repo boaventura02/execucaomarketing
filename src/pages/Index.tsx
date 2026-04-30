@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Loader2, Eye, Snowflake, X } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Loader2, Eye, Snowflake, X, Video } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useData, type StatusGeral } from "@/data/DataContext";
+import { useRecordings } from "@/data/RecordingContext";
 import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,6 +22,7 @@ type KpiFilter = "all" | "Concluído" | "Atrasado" | "Em andamento" | "Revisão"
 export default function Dashboard() {
   const navigate = useNavigate();
   const { summaries, allResponsaveis, allStatuses } = useData();
+  const { recordings, clientSettings, getProductionStats } = useRecordings();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
@@ -54,6 +56,20 @@ export default function Dashboard() {
   const pendentes = kpiBase.filter(c => c.status === "Pendente").length;
   const congelados = useMemo(() => summaries.filter(c => c.congelado).length, [summaries]);
   const avgProgress = filtered.length > 0 ? Math.round(filtered.reduce((s, c) => s + c.progresso, 0) / filtered.length) : 0;
+  
+  // Recording KPIs
+  const recordingsToday = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return recordings.filter(r => r.date === today).length;
+  }, [recordings]);
+
+  const productionPending = useMemo(() => {
+    return summaries.filter(s => !s.congelado && !getProductionStats(s.cliente).isFinished).length;
+  }, [summaries, getProductionStats]);
+
+  const noContentClients = useMemo(() => {
+    return Object.values(clientSettings).filter(s => s.status === "Sem conteúdo").length;
+  }, [clientSettings]);
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
