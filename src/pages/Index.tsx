@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Loader2, Eye, Snowflake, X } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Loader2, Eye, Snowflake, X, Video } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useData, type StatusGeral } from "@/data/DataContext";
+import { useRecordings } from "@/data/RecordingContext";
 import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,6 +22,7 @@ type KpiFilter = "all" | "Concluído" | "Atrasado" | "Em andamento" | "Revisão"
 export default function Dashboard() {
   const navigate = useNavigate();
   const { summaries, allResponsaveis, allStatuses } = useData();
+  const { recordings, clientSettings, getProductionStats } = useRecordings();
   const [filterResp, setFilterResp] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
@@ -54,6 +56,20 @@ export default function Dashboard() {
   const pendentes = kpiBase.filter(c => c.status === "Pendente").length;
   const congelados = useMemo(() => summaries.filter(c => c.congelado).length, [summaries]);
   const avgProgress = filtered.length > 0 ? Math.round(filtered.reduce((s, c) => s + c.progresso, 0) / filtered.length) : 0;
+  
+  // Recording KPIs
+  const recordingsToday = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return recordings.filter(r => r.date === today).length;
+  }, [recordings]);
+
+  const productionPending = useMemo(() => {
+    return summaries.filter(s => !s.congelado && !getProductionStats(s.cliente).isFinished).length;
+  }, [summaries, getProductionStats]);
+
+  const noContentClients = useMemo(() => {
+    return Object.values(clientSettings).filter(s => s.status === "Sem conteúdo").length;
+  }, [clientSettings]);
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -114,9 +130,9 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 mb-4">
           <ClickableKpi active={kpiFilter === "all"} onClick={() => handleKpiClick("all")}>
-            <KpiCard title="Clientes" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
+            <KpiCard title="Clientes Ativos" value={totalClientes} icon={Users} color="text-primary" bgColor="bg-primary/10" delay={0} />
           </ClickableKpi>
           <ClickableKpi active={kpiFilter === "Concluído"} onClick={() => handleKpiClick("Concluído")}>
             <KpiCard title="Entregues" value={entregues} icon={CheckCircle2} color="text-status-delivered" bgColor="bg-status-delivered-bg" delay={60} />
@@ -127,12 +143,57 @@ export default function Dashboard() {
           <ClickableKpi active={kpiFilter === "Revisão"} onClick={() => handleKpiClick("Revisão")}>
             <KpiCard title="Em revisão" value={emRevisao} icon={Eye} color="text-status-review" bgColor="bg-status-review-bg" delay={180} />
           </ClickableKpi>
-          <ClickableKpi active={kpiFilter === "Pendente"} onClick={() => handleKpiClick("Pendente")}>
-            <KpiCard title="Pendentes" value={pendentes} icon={Clock} color="text-status-pending" bgColor="bg-status-pending-bg" delay={240} />
-          </ClickableKpi>
           <ClickableKpi active={kpiFilter === "Atrasado"} onClick={() => handleKpiClick("Atrasado")}>
             <KpiCard title="Atrasados" value={atrasados} icon={AlertTriangle} color="text-status-late" bgColor="bg-status-late-bg" delay={300} />
           </ClickableKpi>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <button 
+            onClick={() => navigate("/agenda")}
+            className="text-left rounded-xl transition-all hover:scale-[1.02] bg-white border border-border shadow-sm p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                <Video className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Gravações Hoje</p>
+                <p className="text-2xl font-bold">{recordingsToday}</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => navigate("/agenda?view=list")}
+            className="text-left rounded-xl transition-all hover:scale-[1.02] bg-white border border-border shadow-sm p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Produção Pendente</p>
+                <p className="text-2xl font-bold">{productionPending}</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => navigate("/agenda?view=list")}
+            className="text-left rounded-xl transition-all hover:scale-[1.02] bg-white border border-border shadow-sm p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Sem Conteúdo</p>
+                <p className="text-2xl font-bold text-red-600">{noContentClients}</p>
+              </div>
+            </div>
+          </button>
+
           <ClickableKpi active={kpiFilter === "Congelado"} onClick={() => handleKpiClick("Congelado")}>
             <KpiCard title="Congelados" value={congelados} icon={Snowflake} color="text-blue-400" bgColor="bg-blue-400/10" delay={360} />
           </ClickableKpi>
