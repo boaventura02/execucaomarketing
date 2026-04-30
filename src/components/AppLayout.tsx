@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X, CircleDollarSign } from "lucide-react";
+import { LayoutDashboard, Users, Table2, Presentation, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, Menu, X, CircleDollarSign, Calendar } from "lucide-react";
 import { useData } from "@/data/DataContext";
 import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/clientes", label: "Clientes", icon: Users },
+  { to: "/agenda", label: "Agenda", icon: Calendar },
   { to: "/apresentacao", label: "Apresentação", icon: Presentation },
   { to: "/financeiro", label: "Financeiro", icon: CircleDollarSign },
 ];
