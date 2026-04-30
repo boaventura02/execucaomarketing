@@ -45,7 +45,7 @@ interface RecordingContextType {
 const RecordingContext = createContext<RecordingContextType | undefined>(undefined);
 
 export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { clients } = useData();
+  const { summaries } = useData();
   const [recordings, setRecordings] = useState<Recording[]>(() => {
     const saved = localStorage.getItem("recording_data");
     return saved ? JSON.parse(saved) : [];
@@ -64,11 +64,11 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     localStorage.setItem("client_recording_settings", JSON.stringify(clientSettings));
   }, [clientSettings]);
 
-  // Sync settings with DataContext clients
+  // Sync settings with DataContext summaries
   useEffect(() => {
     setClientSettings(prev => {
       const next = { ...prev };
-      clients.forEach(client => {
+      summaries.forEach(client => {
         if (!next[client.cliente]) {
           // Find contracted reels from items
           const reelsItem = client.items.find(i => i.tipo.toLowerCase().includes("reels"));
@@ -91,7 +91,7 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       return next;
     });
-  }, [clients]);
+  }, [summaries]);
 
   const addRecording = (recording: Omit<Recording, "id">) => {
     const id = crypto.randomUUID();
