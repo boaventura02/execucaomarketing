@@ -29,8 +29,11 @@ export interface ClientRow {
   localObservacoes: LocalObservation[];
   /** Cliente congelado (não estamos seguindo com o trabalho dele) */
   congelado?: boolean;
+  /** Vídeos gravados no mês (relacionado à produção presencial) */
+  videosGravados?: number;
   /** Valores das colunas customizadas, indexados por columnId */
   custom: Record<string, string>;
+
 }
 
 export interface ClientSummary {
@@ -53,7 +56,9 @@ export interface ClientSummary {
   observacoes: string;
   localObservacoes: LocalObservation[];
   congelado: boolean;
+  totalVideosGravados: number;
 }
+
 
 export type ColumnKind = "base" | "custom";
 export type ColumnType = "text" | "date" | "select";
@@ -134,8 +139,10 @@ const initialColumns: ColumnDef[] = [
   { id: "statusEntrega", kind: "base", label: "Status Entrega", type: "text", width: "130px" },
   { id: "prazoFinal", kind: "base", label: "Prazo Final", type: "date", width: "120px" },
   { id: "statusGeral", kind: "base", label: "Status Geral", type: "select", width: "140px" },
+  { id: "videosGravados", kind: "base", label: "Vídeos Gravados", type: "text", width: "120px" },
   { id: "observacoes", kind: "base", label: "Observações", type: "text", width: "180px" },
 ];
+
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
 
@@ -232,7 +239,9 @@ function computeSummaries(rows: ClientRow[]): ClientSummary[] {
       observacoes: first.observacoes || "",
       localObservacoes: first.localObservacoes || [],
       congelado: !!first.congelado,
+      totalVideosGravados: cRows.reduce((acc, r) => acc + (r.videosGravados || 0), 0),
     };
+
   });
 
   const statusOrder: Record<string, number> = {
@@ -388,8 +397,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       cliente: "", dataFechamento: "", vencimentoContrato: "", responsavel: "",
       tipoConteudo: "", quantidadeContratada: "", statusEntrega: "", statusGeral: "Pendente",
       dataGravacao: "", statusGravacao: "", dataEntregaPrevista: "", autorizadoPor: "",
-      prazoFinal: "", observacoes: "", localObservacoes: [], custom: {},
+      prazoFinal: "", videosGravados: 0, observacoes: "", localObservacoes: [], custom: {},
     }]);
+
   }, []);
 
   const deleteRow = useCallback((id: string) => {

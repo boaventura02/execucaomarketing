@@ -17,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const AgendaPage = () => {
   const { recordings, clientSettings, addRecording, updateRecording, deleteRecording, updateClientSettings, getProductionStats } = useRecordings();
-  const { summaries } = useData();
+  const { summaries, updateRow, rows } = useData();
   const [view, setView] = useState<"calendar" | "list">("calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -101,9 +101,27 @@ const AgendaPage = () => {
       status: "Concluído",
       recordedVideos: formData.recordedVideos
     });
+
+    // Update the "spreadsheet" (DataContext)
+    // Find the "Gravação Presencial" or "Reels" row for this client
+    const clientRows = rows.filter(r => r.cliente === recordingToComplete.clientName);
+    const targetRow = clientRows.find(r => 
+      r.tipoConteudo.toLowerCase().includes("gravação") || 
+      r.tipoConteudo.toLowerCase().includes("reels")
+    ) || clientRows[0];
+
+    if (targetRow) {
+      const currentVideos = targetRow.videosGravados || 0;
+      updateRow(targetRow.id, {
+        videosGravados: currentVideos + formData.recordedVideos,
+        statusEntrega: "Concluído"
+      });
+    }
+
     setIsCompletionDialogOpen(false);
     setRecordingToComplete(null);
   };
+
 
   // Calendar Logic
   const monthStart = startOfMonth(currentMonth);
