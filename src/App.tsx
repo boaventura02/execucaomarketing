@@ -32,7 +32,8 @@ const App = () => (
               <Route path="/financeiro" element={<FinanceiroPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
+            </BrowserRouter>
+          </RecordingProvider>
         </FinanceProvider>
       </DataProvider>
     </TooltipProvider>
