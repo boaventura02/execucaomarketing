@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useRecordings, Recording, RecordingStatus, RecordingPriority, RecordingFrequency, ClientRecordingStatus } from "@/data/RecordingContext";
 import { useData } from "@/data/DataContext";
 import { Calendar as CalendarIcon, List, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Save, X, AlertCircle, CheckCircle2, Video, Clock, Info } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, parseISO, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
