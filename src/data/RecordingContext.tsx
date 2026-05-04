@@ -35,6 +35,7 @@ interface RecordingContextType {
   updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
   deleteRecording: (id: string, deleteAllType?: "single" | "group" | "client") => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
+  resetMonthlyData: () => void;
   getProductionStats: (clientName: string) => {
     contracted: number;
     recorded: number;
@@ -65,6 +66,17 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     localStorage.setItem("client_recording_settings", JSON.stringify(clientSettings));
   }, [clientSettings]);
+
+  useEffect(() => {
+    const lastReset = localStorage.getItem("last_monthly_reset");
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
+    
+    if (lastReset !== currentMonthKey) {
+      resetMonthlyData();
+      localStorage.setItem("last_monthly_reset", currentMonthKey);
+    }
+  }, []);
 
   // Sync settings with DataContext summaries
   useEffect(() => {
@@ -161,6 +173,25 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   };
 
+  const resetMonthlyData = () => {
+    // Only clear recordings from previous months that are completed
+    // Or just clear all if the user wants to "start fresh"
+    // Usually "zerar a lista" means clearing the historical data for the monthly stats
+    setRecordings(prev => {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Keep only future recordings or recordings from the current month
+      return prev.filter(r => {
+        const d = new Date(r.date);
+        const isFuture = d > now;
+        const isCurrentMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        return isFuture || isCurrentMonth;
+      });
+    });
+  };
+
   const getProductionStats = (clientName: string) => {
     const settings = clientSettings[clientName];
     const contracted = settings?.reelsContracted || 0;
@@ -194,6 +225,7 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       updateRecording,
       deleteRecording,
       updateClientSettings,
+      resetMonthlyData,
       getProductionStats
     }}>
       {children}

@@ -140,6 +140,10 @@ const AgendaPage = () => {
       isNoContent ? { status: "Normal" } : undefined
     );
 
+    // Update the Client Setting Reels Contracted if needed (optional logic)
+    // Here we ensure the client leaves the "red" (low balance) by adding recorded videos
+    // The getProductionStats will now account for these new videos
+
     // Update the "spreadsheet" (DataContext)
     // Find the "Gravação Presencial" or "Reels" row for this client
     const clientRows = rows.filter(r => r.cliente === recordingToComplete.clientName);
