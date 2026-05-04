@@ -166,21 +166,28 @@ const AgendaPage = () => {
   const confirmCompletion = () => {
     if (!recordingToComplete) return;
     
-    const settings = clientSettings[recordingToComplete.clientName];
+    const clientName = recordingToComplete.clientName;
+    const settings = clientSettings[clientName];
     const isNoContent = settings?.status === "Sem conteúdo";
+    const addedVideos = formData.recordedVideos || 0;
 
-    // If it's a real recording, update it. If it's a quick complete, we just update the client/DataContext
+    // If it's a real recording, update it. If it's a quick complete, we add to manual videos for the selected month
     if (recordingToComplete.id !== "temp") {
       updateRecording(
         recordingToComplete.id, 
         {
           status: "Concluído",
-          recordedVideos: formData.recordedVideos
+          recordedVideos: addedVideos
         },
         isNoContent ? { status: "Normal" } : undefined
       );
-    } else if (isNoContent) {
-      updateClientSettings(recordingToComplete.clientName, { status: "Normal" });
+    } else {
+      // Quick complete: increment the manual count for the current month
+      const currentStats = getProductionStats(clientName, currentMonth);
+      updateManualVideos(clientName, currentMonth, currentStats.manualRecorded + addedVideos);
+      if (isNoContent) {
+        updateClientSettings(clientName, { status: "Normal" });
+      }
     }
 
     // Update the "spreadsheet" (DataContext)
@@ -882,7 +889,7 @@ const AgendaPage = () => {
                         </Button>
                       )}
 
-                      {client.settings?.status === "Sem conteúdo" && (
+                      {!client.stats.isFinished && (
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -1029,7 +1036,7 @@ const AgendaPage = () => {
                               </Button>
                             )}
 
-                            {client.settings?.status === "Sem conteúdo" && (
+                            {!client.stats.isFinished && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
