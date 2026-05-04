@@ -59,14 +59,13 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [clientSettings, setClientSettings] = useState<Record<string, ClientRecordingSettings>>(() => {
     const saved = localStorage.getItem("client_recording_settings");
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const [manualVideos, setManualVideos] = useState<Record<string, Record<string, number>>>(() => {
     const saved = localStorage.getItem("manual_recorded_videos");
     return saved ? JSON.parse(saved) : {};
   });
-
-  useEffect(() => {
-    localStorage.setItem("manual_recorded_videos", JSON.stringify(manualVideos));
-  }, [manualVideos]);
 
   useEffect(() => {
     localStorage.setItem("recording_data", JSON.stringify(recordings));
@@ -75,6 +74,10 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     localStorage.setItem("client_recording_settings", JSON.stringify(clientSettings));
   }, [clientSettings]);
+
+  useEffect(() => {
+    localStorage.setItem("manual_recorded_videos", JSON.stringify(manualVideos));
+  }, [manualVideos]);
 
   useEffect(() => {
     const lastReset = localStorage.getItem("last_monthly_reset");
@@ -194,15 +197,11 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const resetMonthlyData = () => {
-    // Only clear recordings from previous months that are completed
-    // Or just clear all if the user wants to "start fresh"
-    // Usually "zerar a lista" means clearing the historical data for the monthly stats
     setRecordings(prev => {
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       
-      // Keep only future recordings or recordings from the current month
       return prev.filter(r => {
         const d = new Date(r.date);
         const isFuture = d > now;
@@ -216,7 +215,6 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const settings = clientSettings[clientName];
     const contracted = settings?.reelsContracted || 0;
     
-    // Get all completed recordings for this client in the specified month
     const now = targetMonth || new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -230,11 +228,15 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
 
     const recorded = monthlyRecordings.reduce((sum, r) => sum + r.recordedVideos, 0);
-    const remaining = Math.max(0, contracted - recorded);
-    const excess = Math.max(0, recorded - contracted);
-    const isFinished = recorded >= contracted && contracted > 0;
+    const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+    const manualRecorded = manualVideos[clientName]?.[monthKey] || 0;
+    const totalRecorded = recorded + manualRecorded;
+    
+    const remaining = Math.max(0, contracted - totalRecorded);
+    const excess = Math.max(0, totalRecorded - contracted);
+    const isFinished = totalRecorded >= contracted && contracted > 0;
 
-    return { contracted, recorded, remaining, excess, isFinished };
+    return { contracted, recorded, manualRecorded, totalRecorded, remaining, excess, isFinished };
   };
 
   return (
@@ -245,6 +247,7 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       updateRecording,
       deleteRecording,
       updateClientSettings,
+      updateManualVideos,
       resetMonthlyData,
       getProductionStats
     }}>
