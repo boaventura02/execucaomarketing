@@ -642,19 +642,18 @@ const AgendaPage = () => {
                </Card>
             </div>
 
-            <Card className="border-sidebar-border shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-sidebar/50 text-muted-foreground font-medium border-b">
+            <Card className="border-sidebar-border shadow-sm overflow-hidden flex flex-col">
+              <div className="overflow-x-auto overflow-y-auto max-h-[600px] relative">
+                <table className="w-full text-sm text-left border-separate border-spacing-0">
+                  <thead className="bg-sidebar/95 backdrop-blur-sm text-muted-foreground font-medium border-b sticky top-0 z-10 shadow-sm">
                     <tr>
-                      <th className="px-4 py-3">Cliente</th>
-                      <th className="px-4 py-3">Próxima Gravação</th>
-                      <th className="px-4 py-3">Frequência</th>
-                      <th className="px-4 py-3 text-center">Contratado</th>
-                      <th className="px-4 py-3 text-center">Produzido</th>
-                      <th className="px-4 py-3 text-center">Saldo</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Ações</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Cliente</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Próxima Gravação</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Contratado</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Produzido</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Saldo</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Status</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
