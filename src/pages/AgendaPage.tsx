@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useRecordings, Recording, RecordingStatus, RecordingPriority, RecordingFrequency, ClientRecordingStatus } from "@/data/RecordingContext";
 import { useData } from "@/data/DataContext";
-import { Calendar as CalendarIcon, List, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Save, X, AlertCircle, CheckCircle2, Video, Clock, Info } from "lucide-react";
+import { Calendar as CalendarIcon, List, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Save, X, AlertCircle, CheckCircle2, Video, Clock, Info, Search, Check, ChevronsUpDown } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, parseISO, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const AgendaPage = () => {
   const { recordings, clientSettings, addRecording, updateRecording, deleteRecording, updateClientSettings, getProductionStats } = useRecordings();
@@ -23,14 +26,18 @@ const AgendaPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
   const [recordingToComplete, setRecordingToComplete] = useState<Recording | null>(null);
   const [editingRecording, setEditingRecording] = useState<Recording | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
     clientName: "",
     date: format(new Date(), "yyyy-MM-dd"),
+    time: "09:00",
     plannedVideos: 1,
     recordedVideos: 0,
     topic: "",
@@ -45,6 +52,7 @@ const AgendaPage = () => {
     setFormData({
       clientName: "",
       date: format(selectedDate || new Date(), "yyyy-MM-dd"),
+      time: "09:00",
       plannedVideos: 1,
       recordedVideos: 0,
       topic: "",
@@ -83,6 +91,7 @@ const AgendaPage = () => {
     setFormData({
       clientName: recording.clientName,
       date: recording.date,
+      time: recording.time || "09:00",
       plannedVideos: recording.plannedVideos,
       recordedVideos: recording.recordedVideos,
       topic: recording.topic,
@@ -92,6 +101,19 @@ const AgendaPage = () => {
       frequency: "Nenhuma"
     });
     setIsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (recording: Recording) => {
+    setRecordingToDelete(recording);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = (deleteAll: boolean) => {
+    if (recordingToDelete) {
+      deleteRecording(recordingToDelete.id, deleteAll);
+      setIsDeleteDialogOpen(false);
+      setRecordingToDelete(null);
+    }
   };
 
   const handleCompleteRecording = (recording: Recording) => {
@@ -244,19 +266,49 @@ const AgendaPage = () => {
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Cliente</Label>
-                    <Select 
-                      value={formData.clientName} 
-                      onValueChange={(v) => setFormData({...formData, clientName: v})}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Selecione o cliente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {summaries.filter(s => !s.congelado).map(s => (
-                          <SelectItem key={s.cliente} value={s.cliente}>{s.cliente}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="col-span-3">
+                      <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={clientSearchOpen}
+                            className="w-full justify-between"
+                          >
+                            {formData.clientName || "Selecione o cliente"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Buscar cliente..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                              <CommandGroup>
+                                {summaries.filter(s => !s.congelado).map((s) => (
+                                  <CommandItem
+                                    key={s.cliente}
+                                    value={s.cliente}
+                                    onSelect={(currentValue) => {
+                                      setFormData({ ...formData, clientName: currentValue });
+                                      setClientSearchOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        formData.clientName === s.cliente ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {s.cliente}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -270,10 +322,29 @@ const AgendaPage = () => {
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Vídeos Planejados</Label>
+                    <Label className="text-right">Data e Hora</Label>
+                    <div className="col-span-3 flex gap-2">
+                      <Input 
+                        type="date" 
+                        className="flex-1" 
+                        value={formData.date}
+                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                      />
+                      <Input 
+                        type="time" 
+                        className="w-24" 
+                        value={formData.time}
+                        onChange={(e) => setFormData({...formData, time: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Vídeos</Label>
                     <Input 
                       type="number" 
                       className="col-span-3" 
+                      placeholder="Qtd de vídeos planejados"
                       value={formData.plannedVideos}
                       onChange={(e) => setFormData({...formData, plannedVideos: parseInt(e.target.value) || 0})}
                     />
@@ -301,29 +372,14 @@ const AgendaPage = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Status</Label>
-                    <Select 
-                      value={formData.status} 
-                      onValueChange={(v: RecordingStatus) => setFormData({...formData, status: v})}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Agendado">Agendado</SelectItem>
-                        <SelectItem value="Concluído">Concluído</SelectItem>
-                        <SelectItem value="Cancelado">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
                   {!editingRecording && (
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label className="text-right">Frequência</Label>
+                      <Label className="text-right font-bold text-primary">Recorrência</Label>
                       <Select 
                         value={formData.frequency} 
                         onValueChange={(v: RecordingFrequency | "Nenhuma") => setFormData({...formData, frequency: v})}
                       >
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger className="col-span-3 border-primary/50 bg-primary/5">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -335,7 +391,25 @@ const AgendaPage = () => {
                       </Select>
                     </div>
                   )}
-                </div>
+
+                  {editingRecording && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">Status</Label>
+                      <Select 
+                        value={formData.status} 
+                        onValueChange={(v: RecordingStatus) => setFormData({...formData, status: v})}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Agendado">Agendado</SelectItem>
+                          <SelectItem value="Concluído">Concluído</SelectItem>
+                          <SelectItem value="Cancelado">Cancelado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Prioridade</Label>
@@ -397,6 +471,37 @@ const AgendaPage = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <DialogContent className="sm:max-w-[400px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-destructive">
+                    <Trash2 className="w-5 h-5" />
+                    Excluir Agendamento
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="py-4 space-y-3">
+                  <p className="text-sm">
+                    Deseja excluir o agendamento de <span className="font-bold">{recordingToDelete?.clientName}</span> no dia <span className="font-bold">{recordingToDelete && format(parseISO(recordingToDelete.date), "dd/MM")}</span>?
+                  </p>
+                  {recordingToDelete?.groupId && (
+                    <div className="bg-muted p-3 rounded-lg border border-dashed text-xs text-muted-foreground">
+                      Este é um agendamento recorrente.
+                    </div>
+                  )}
+                </div>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="sm:mr-auto">Cancelar</Button>
+                  {recordingToDelete?.groupId && (
+                    <Button variant="destructive" onClick={() => confirmDelete(true)}>
+                      Excluir Todos
+                    </Button>
+                  )}
+                  <Button variant="destructive" onClick={() => confirmDelete(false)}>
+                    Excluir Apenas Este
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -454,10 +559,15 @@ const AgendaPage = () => {
                                 <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditClick(rec)}>
                                   <Edit2 className="w-2.5 h-2.5" />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => deleteRecording(rec.id)}>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => handleDeleteClick(rec)}>
                                   <Trash2 className="w-2.5 h-2.5" />
                                 </Button>
                               </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5 text-[10px] text-primary font-semibold">
+                              <Clock className="w-3 h-3" />
+                              {rec.time || "09:00"}
                             </div>
                             
                             <p className="text-[10px] text-muted-foreground italic line-clamp-2">
@@ -564,11 +674,14 @@ const AgendaPage = () => {
                               "bg-green-50 border-green-200 text-green-700"
                             }`}
                           >
-                            <div className="flex items-center gap-1">
-                              {rec.status === "Concluído" && <CheckCircle2 className="w-2.5 h-2.5 text-green-600 shrink-0" />}
-                              <span className={`font-bold truncate ${rec.status === "Concluído" ? "line-through opacity-60" : ""}`}>
-                                {rec.clientName}
-                              </span>
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <div className="flex items-center gap-1 truncate">
+                                {rec.status === "Concluído" && <CheckCircle2 className="w-2.5 h-2.5 text-green-600 shrink-0" />}
+                                <span className={`font-bold truncate ${rec.status === "Concluído" ? "line-through opacity-60" : ""}`}>
+                                  {rec.clientName}
+                                </span>
+                              </div>
+                              <span className="shrink-0 text-[9px] font-bold text-primary/80">{rec.time || "09:00"}</span>
                             </div>
                             <div className="flex justify-between opacity-80">
                               <span className="truncate">{rec.topic || "Sem tema"}</span>
