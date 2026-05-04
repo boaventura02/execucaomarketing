@@ -800,6 +800,29 @@ const AgendaPage = () => {
                           {client.settings?.status === "Sem conteúdo" ? "Normalizar" : "Sem Conteúdo"}
                         </Button>
                       )}
+
+                      {!client.stats.isFinished && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 h-8 text-[10px] border-green-200 text-green-600"
+                          onClick={() => {
+                            const clientRows = rows.filter(r => r.cliente === client.cliente);
+                            const targetRow = clientRows.find(r => 
+                              r.tipoConteudo.toLowerCase().includes("gravação") || 
+                              r.tipoConteudo.toLowerCase().includes("reels")
+                            ) || clientRows[0];
+                            if (targetRow) {
+                              updateRow(targetRow.id, {
+                                statusEntrega: "Concluído",
+                                videosGravados: client.stats.contracted
+                              });
+                            }
+                          }}
+                        >
+                          <Check className="w-3 h-3 mr-1" /> Concluir
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
