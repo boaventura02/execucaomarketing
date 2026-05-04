@@ -8,9 +8,11 @@ export type ClientRecordingStatus = "Normal" | "Sem conteúdo";
 
 export interface Recording {
   id: string;
-  clientId: string; // matches client name from DataContext for now
+  groupId?: string; // Links recurring recordings
+  clientId: string; 
   clientName: string;
   date: string;
+  time?: string; // HH:mm
   plannedVideos: number;
   recordedVideos: number;
   topic: string;
@@ -29,9 +31,9 @@ export interface ClientRecordingSettings {
 interface RecordingContextType {
   recordings: Recording[];
   clientSettings: Record<string, ClientRecordingSettings>;
-  addRecording: (recording: Omit<Recording, "id">, recurring?: RecordingFrequency) => void;
+  addRecording: (recording: Omit<Recording, "id" | "groupId">, recurring?: RecordingFrequency) => void;
   updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
-  deleteRecording: (id: string) => void;
+  deleteRecording: (id: string, deleteAllFromGroup?: boolean) => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
   getProductionStats: (clientName: string) => {
     contracted: number;
@@ -93,15 +95,15 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   }, [summaries]);
 
-  const addRecording = (recording: Omit<Recording, "id">, recurring?: RecordingFrequency) => {
+  const addRecording = (recording: Omit<Recording, "id" | "groupId">, recurring?: RecordingFrequency) => {
     const baseId = crypto.randomUUID();
-    const newRecordings: Recording[] = [{ ...recording, id: baseId }];
+    const groupId = recurring ? crypto.randomUUID() : undefined;
+    const newRecordings: Recording[] = [{ ...recording, id: baseId, groupId }];
 
     if (recurring) {
       const baseDate = new Date(recording.date + "T12:00:00");
       let occurrences = 0;
       
-      // Add next 4 occurrences for weekly/quinzenal or next 2 for monthly
       const maxOccurrences = recurring === "Mensal" ? 2 : 4;
       
       while (occurrences < maxOccurrences) {
@@ -114,6 +116,7 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         newRecordings.push({
           ...recording,
           id: crypto.randomUUID(),
+          groupId,
           date: nextDate.toISOString().split("T")[0]
         });
       }
@@ -134,7 +137,14 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const deleteRecording = (id: string) => {
+  const deleteRecording = (id: string, deleteAllFromGroup: boolean = false) => {
+    if (deleteAllFromGroup) {
+      const recording = recordings.find(r => r.id === id);
+      if (recording?.groupId) {
+        setRecordings(prev => prev.filter(r => r.groupId !== recording.groupId));
+        return;
+      }
+    }
     setRecordings(prev => prev.filter(r => r.id !== id));
   };
 
