@@ -1036,7 +1036,7 @@ const AgendaPage = () => {
                               </Button>
                             )}
 
-                            {client.settings?.status === "Sem conteúdo" && (
+                            {!client.stats.isFinished && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
