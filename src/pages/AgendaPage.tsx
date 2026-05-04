@@ -419,7 +419,7 @@ const AgendaPage = () => {
               const isDayToday = isToday(day);
               
               return (
-                <div key={index} className="flex flex-col gap-3 min-w-[150px]">
+                <div key={index} className="flex flex-col gap-3 min-w-[200px] sm:min-w-[150px] snap-center">
                   <div className={`p-2 rounded-t-lg border-b-2 text-center ${isDayToday ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-muted"}`}>
                     <p className="text-[10px] uppercase font-bold tracking-wider leading-none">
                       {format(day, "EEEE", { locale: ptBR })}
