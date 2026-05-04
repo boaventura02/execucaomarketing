@@ -689,15 +689,26 @@ const AgendaPage = () => {
                             </div>
                             
                             {rec.status !== "Concluído" && (
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCompleteRecording(rec);
-                                }}
-                                className="absolute -right-1 -top-1 bg-green-600 text-white rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <CheckCircle2 className="w-3 h-3" />
-                              </button>
+                              <div className="absolute -right-1 -top-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(rec);
+                                  }}
+                                  className="bg-red-600 text-white rounded-full p-0.5 shadow-md hover:bg-red-700"
+                                >
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCompleteRecording(rec);
+                                  }}
+                                  className="bg-green-600 text-white rounded-full p-0.5 shadow-md hover:bg-green-700"
+                                >
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
                             )}
                           </div>
                         ))}
