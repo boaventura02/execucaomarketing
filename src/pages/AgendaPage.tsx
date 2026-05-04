@@ -50,24 +50,30 @@ const AgendaPage = () => {
       topic: "",
       status: "Agendado",
       priority: "OK",
-      scriptStatus: "Pendente"
+      scriptStatus: "Pendente",
+      frequency: "Nenhuma"
     });
     setEditingRecording(null);
   };
 
   const handleAddRecording = () => {
     if (!formData.clientName) return;
-    addRecording({
-      ...formData,
-      clientId: formData.clientName
-    });
+    const { frequency, ...recordingData } = formData;
+    addRecording(
+      {
+        ...recordingData,
+        clientId: formData.clientName
+      },
+      frequency === "Nenhuma" ? undefined : frequency
+    );
     setIsDialogOpen(false);
     resetForm();
   };
 
   const handleUpdateRecording = () => {
     if (!editingRecording) return;
-    updateRecording(editingRecording.id, formData);
+    const { frequency, ...recordingData } = formData;
+    updateRecording(editingRecording.id, recordingData);
     setIsDialogOpen(false);
     resetForm();
   };
@@ -82,7 +88,8 @@ const AgendaPage = () => {
       topic: recording.topic,
       status: recording.status,
       priority: recording.priority,
-      scriptStatus: recording.scriptStatus
+      scriptStatus: recording.scriptStatus,
+      frequency: "Nenhuma"
     });
     setIsDialogOpen(true);
   };
