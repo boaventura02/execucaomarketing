@@ -410,7 +410,7 @@ const AgendaPage = () => {
             </h3>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          <div className="flex overflow-x-auto pb-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 snap-x">
             {eachDayOfInterval({
               start: startOfWeek(new Date(), { weekStartsOn: 0 }),
               end: endOfWeek(new Date(), { weekStartsOn: 0 })
