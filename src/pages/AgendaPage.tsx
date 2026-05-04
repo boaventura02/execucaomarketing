@@ -913,6 +913,32 @@ const AgendaPage = () => {
                                 Gravado
                               </Button>
                             )}
+
+                            {!client.stats.isFinished && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-[11px] gap-1 px-2 border-green-200 text-green-600 hover:bg-green-50"
+                                onClick={() => {
+                                  // Find the target row in DataContext to mark as finished
+                                  const clientRows = rows.filter(r => r.cliente === client.cliente);
+                                  const targetRow = clientRows.find(r => 
+                                    r.tipoConteudo.toLowerCase().includes("gravação") || 
+                                    r.tipoConteudo.toLowerCase().includes("reels")
+                                  ) || clientRows[0];
+
+                                  if (targetRow) {
+                                    updateRow(targetRow.id, {
+                                      statusEntrega: "Concluído",
+                                      videosGravados: client.stats.contracted // Set to contracted amount to mark as finished
+                                    });
+                                  }
+                                }}
+                              >
+                                <Check className="w-3 h-3" />
+                                Concluir
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
