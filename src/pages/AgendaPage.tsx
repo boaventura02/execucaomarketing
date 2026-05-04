@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 
 const AgendaPage = () => {
-  const { recordings, clientSettings, addRecording, updateRecording, deleteRecording, updateClientSettings, getProductionStats } = useRecordings();
+  const { recordings, clientSettings, addRecording, updateRecording, deleteRecording, updateClientSettings, updateManualVideos, getProductionStats } = useRecordings();
   const { summaries, updateRow, rows } = useData();
   const [view, setView] = useState<"calendar" | "list">("calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -32,6 +32,8 @@ const AgendaPage = () => {
   const [editingRecording, setEditingRecording] = useState<Recording | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [editingManualClient, setEditingManualClient] = useState<string | null>(null);
+  const [manualCountValue, setManualCountValue] = useState<string>("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -116,6 +118,25 @@ const AgendaPage = () => {
     }
   };
 
+  const handleManualEditStart = (clientName: string, currentCount: number) => {
+    setEditingManualClient(clientName);
+    setManualCountValue(currentCount.toString());
+  };
+
+  const handleManualEditSave = (clientName: string) => {
+    const count = parseInt(manualCountValue) || 0;
+    updateManualVideos(clientName, currentMonth, count);
+    
+    // Check if total production is finished after manual edit
+    const stats = getProductionStats(clientName, currentMonth);
+    const settings = clientSettings[clientName];
+    if (stats.isFinished && settings?.status === "Sem conteúdo") {
+      updateClientSettings(clientName, { status: "Normal" });
+    }
+    
+    setEditingManualClient(null);
+  };
+
   const handleCompleteRecording = (recording: Recording) => {
     setRecordingToComplete(recording);
     setFormData({
@@ -176,6 +197,16 @@ const AgendaPage = () => {
         statusEntrega: "Concluído"
       });
     }
+
+    // After completion, update client status based on new total
+    setTimeout(() => {
+      const stats = getProductionStats(recordingToComplete.clientName, currentMonth);
+      if (stats.isFinished && isNoContent) {
+        updateClientSettings(recordingToComplete.clientName, { status: "Normal" });
+      } else if (!stats.isFinished && !isNoContent && stats.totalRecorded === 0) {
+        updateClientSettings(recordingToComplete.clientName, { status: "Sem conteúdo" });
+      }
+    }, 0);
 
     setIsCompletionDialogOpen(false);
     setRecordingToComplete(null);
@@ -794,10 +825,27 @@ const AgendaPage = () => {
                         ) : <span className="text-muted-foreground italic">Não agendado</span>}
                       </div>
                       <div className="bg-muted/50 p-2 rounded">
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Saldo</p>
-                        <span className={`font-bold ${client.stats.remaining > 0 ? "text-orange-600" : "text-green-600"}`}>
-                          {client.stats.remaining} vídeos
-                        </span>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Produzido</p>
+                        {editingManualClient === client.cliente ? (
+                          <div className="flex items-center gap-1">
+                            <Input 
+                              className="h-6 w-12 text-[10px] p-1" 
+                              value={manualCountValue}
+                              onChange={(e) => setManualCountValue(e.target.value)}
+                              autoFocus
+                            />
+                            <Button size="icon" className="h-6 w-6" onClick={() => handleManualEditSave(client.cliente)}>
+                              <Check className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="font-bold flex items-center justify-between">
+                            <span>{client.stats.totalRecorded}/{client.stats.contracted}</span>
+                            <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => handleManualEditStart(client.cliente, client.stats.manualRecorded)}>
+                              <Edit2 className="h-2 w-2" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -901,9 +949,32 @@ const AgendaPage = () => {
                         </td>
                         <td className="px-4 py-3 text-center font-medium">{client.stats.contracted}</td>
                         <td className="px-4 py-3 text-center">
-                          <Badge variant="secondary" className="font-bold">
-                            {client.stats.recorded}
-                          </Badge>
+                          {editingManualClient === client.cliente ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <Input 
+                                className="h-8 w-16 text-center" 
+                                value={manualCountValue}
+                                onChange={(e) => setManualCountValue(e.target.value)}
+                                autoFocus
+                                onBlur={() => handleManualEditSave(client.cliente)}
+                                onKeyDown={(e) => e.key === "Enter" && handleManualEditSave(client.cliente)}
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-2">
+                              <Badge variant="secondary" className="font-bold">
+                                {client.stats.totalRecorded}
+                              </Badge>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6 text-muted-foreground hover:text-primary"
+                                onClick={() => handleManualEditStart(client.cliente, client.stats.manualRecorded)}
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-center">
                           {client.stats.excess > 0 ? (
@@ -918,8 +989,8 @@ const AgendaPage = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1">
-                            <Badge variant={client.stats.isFinished ? "default" : "outline"} className={client.stats.isFinished ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : ""}>
-                              {client.stats.isFinished ? "Produção Concluída" : "Em Produção"}
+                            <Badge variant={client.stats.isFinished ? "default" : (client.stats.totalRecorded > 0 ? "outline" : "destructive")} className={client.stats.isFinished ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : (client.stats.totalRecorded > 0 ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-red-100 text-red-700 border-red-200")}>
+                              {client.stats.isFinished ? "Concluído" : (client.stats.totalRecorded > 0 ? "Em Atenção" : "Sem Conteúdo")}
                             </Badge>
                             <Button 
                               variant="ghost" 
