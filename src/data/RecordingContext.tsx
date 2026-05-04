@@ -29,8 +29,8 @@ export interface ClientRecordingSettings {
 interface RecordingContextType {
   recordings: Recording[];
   clientSettings: Record<string, ClientRecordingSettings>;
-  addRecording: (recording: Omit<Recording, "id">) => void;
-  updateRecording: (id: string, recording: Partial<Recording>) => void;
+  addRecording: (recording: Omit<Recording, "id">, recurring?: RecordingFrequency) => void;
+  updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
   deleteRecording: (id: string) => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
   getProductionStats: (clientName: string) => {
