@@ -688,21 +688,6 @@ const AgendaPage = () => {
                             <span className="text-muted-foreground italic">Não agendado</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
-                          <Select 
-                            value={client.settings?.frequency || "Quinzenal"}
-                            onValueChange={(v: RecordingFrequency) => updateClientSettings(client.cliente, { frequency: v })}
-                          >
-                            <SelectTrigger className="h-7 w-32 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Semanal">Semanal</SelectItem>
-                              <SelectItem value="Quinzenal">Quinzenal</SelectItem>
-                              <SelectItem value="Mensal">Mensal</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
                         <td className="px-4 py-3 text-center font-medium">{client.stats.contracted}</td>
                         <td className="px-4 py-3 text-center">
                           <Badge variant="secondary" className="font-bold">
