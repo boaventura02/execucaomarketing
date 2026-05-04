@@ -127,7 +127,7 @@ const AgendaPage = () => {
 
   const handleQuickComplete = (clientName: string) => {
     // Create a temporary "recording" to use the existing dialog
-    const stats = getProductionStats(clientName);
+    const stats = getProductionStats(clientName, currentMonth);
     const tempRecording: any = {
       id: "temp",
       clientName: clientName,
@@ -213,7 +213,7 @@ const AgendaPage = () => {
         );
       })
       .map(client => {
-        const stats = getProductionStats(client.cliente);
+        const stats = getProductionStats(client.cliente, currentMonth);
         const settings = clientSettings[client.cliente];
         const nextRecording = recordings
           .filter(r => r.clientName === client.cliente && r.status === "Agendado")
@@ -234,7 +234,7 @@ const AgendaPage = () => {
         };
       })
       .sort((a, b) => b.priorityScore - a.priorityScore);
-  }, [summaries, recordings, clientSettings, getProductionStats, searchTerm]);
+  }, [summaries, recordings, clientSettings, getProductionStats, searchTerm, currentMonth]);
 
   return (
     <AppLayout>
@@ -257,6 +257,18 @@ const AgendaPage = () => {
             </div>
 
             <div className="bg-muted rounded-lg p-1 flex items-center w-full sm:w-auto">
+              <div className="flex items-center gap-2 px-2 mr-2 border-r border-muted-foreground/20">
+                <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium min-w-[100px] text-center capitalize">
+                  {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+                </span>
+                <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
               <Button 
                 variant={view === "calendar" ? "secondary" : "ghost"} 
                 size="sm" 
