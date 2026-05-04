@@ -105,10 +105,18 @@ const AgendaPage = () => {
 
   const confirmCompletion = () => {
     if (!recordingToComplete) return;
-    updateRecording(recordingToComplete.id, {
-      status: "Concluído",
-      recordedVideos: formData.recordedVideos
-    });
+    
+    const settings = clientSettings[recordingToComplete.clientName];
+    const isNoContent = settings?.status === "Sem conteúdo";
+
+    updateRecording(
+      recordingToComplete.id, 
+      {
+        status: "Concluído",
+        recordedVideos: formData.recordedVideos
+      },
+      isNoContent ? { status: "Normal" } : undefined
+    );
 
     // Update the "spreadsheet" (DataContext)
     // Find the "Gravação Presencial" or "Reels" row for this client
