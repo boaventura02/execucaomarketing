@@ -770,16 +770,28 @@ const AgendaPage = () => {
                           setIsDialogOpen(true);
                         }}
                       >
-                        <Plus className="w-3 h-3 mr-1" /> Agendar
+                        <CalendarIcon className="w-3 h-3 mr-1" /> Agendar
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className={`flex-1 h-8 text-[10px] ${client.settings?.status === "Sem conteúdo" ? "text-red-600" : ""}`}
-                        onClick={() => updateClientSettings(client.cliente, { status: client.settings?.status === "Sem conteúdo" ? "Normal" : "Sem conteúdo" })}
-                      >
-                        {client.settings?.status === "Sem conteúdo" ? "Normalizar" : "Sem Conteúdo"}
-                      </Button>
+                      
+                      {client.nextRecording ? (
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="flex-1 h-8 text-[10px] bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
+                          onClick={() => handleCompleteRecording(client.nextRecording!)}
+                        >
+                          <CheckCircle2 className="w-3 h-3 mr-1" /> Gravado
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className={`flex-1 h-8 text-[10px] ${client.settings?.status === "Sem conteúdo" ? "text-red-600" : ""}`}
+                          onClick={() => updateClientSettings(client.cliente, { status: client.settings?.status === "Sem conteúdo" ? "Normal" : "Sem conteúdo" })}
+                        >
+                          {client.settings?.status === "Sem conteúdo" ? "Normalizar" : "Sem Conteúdo"}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -871,25 +883,28 @@ const AgendaPage = () => {
                           <div className="flex items-center gap-1">
                             <Button 
                               variant="outline" 
-                              size="icon" 
-                              className="w-8 h-8"
+                              size="sm" 
+                              className="h-8 text-[11px] gap-1 px-2"
                               onClick={() => {
                                 setFormData(prev => ({ ...prev, clientName: client.cliente }));
                                 setIsDialogOpen(true);
                               }}
                             >
                               <CalendarIcon className="w-3 h-3" />
+                              Agendar
                             </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              className="w-8 h-8"
-                              onClick={() => {
-                                // Just open settings dialog or similar
-                              }}
-                            >
-                              <Info className="w-3 h-3" />
-                            </Button>
+                            
+                            {client.nextRecording && (
+                              <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="h-8 text-[11px] gap-1 px-2 bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
+                                onClick={() => handleCompleteRecording(client.nextRecording!)}
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                Gravado
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
