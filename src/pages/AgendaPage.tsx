@@ -389,16 +389,6 @@ const AgendaPage = () => {
                     </div>
                   )}
                 </div>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OK">🟢 OK</SelectItem>
-                        <SelectItem value="Atenção">🟡 Atenção</SelectItem>
-                        <SelectItem value="Urgente">🔴 Urgente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
                   <Button onClick={editingRecording ? handleUpdateRecording : handleAddRecording}>
