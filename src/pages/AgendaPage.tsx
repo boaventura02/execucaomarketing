@@ -120,7 +120,24 @@ const AgendaPage = () => {
     setRecordingToComplete(recording);
     setFormData({
       ...formData,
-      recordedVideos: recording.plannedVideos || 0
+      recordedVideos: recording.plannedVideos || 1
+    });
+    setIsCompletionDialogOpen(true);
+  };
+
+  const handleQuickComplete = (clientName: string) => {
+    // Create a temporary "recording" to use the existing dialog
+    const stats = getProductionStats(clientName);
+    const tempRecording: any = {
+      id: "temp",
+      clientName: clientName,
+      plannedVideos: stats.remaining > 0 ? stats.remaining : 1,
+      isQuickComplete: true
+    };
+    setRecordingToComplete(tempRecording);
+    setFormData({
+      ...formData,
+      recordedVideos: tempRecording.plannedVideos
     });
     setIsCompletionDialogOpen(true);
   };
@@ -131,21 +148,21 @@ const AgendaPage = () => {
     const settings = clientSettings[recordingToComplete.clientName];
     const isNoContent = settings?.status === "Sem conteúdo";
 
-    updateRecording(
-      recordingToComplete.id, 
-      {
-        status: "Concluído",
-        recordedVideos: formData.recordedVideos
-      },
-      isNoContent ? { status: "Normal" } : undefined
-    );
-
-    // Update the Client Setting Reels Contracted if needed (optional logic)
-    // Here we ensure the client leaves the "red" (low balance) by adding recorded videos
-    // The getProductionStats will now account for these new videos
+    // If it's a real recording, update it. If it's a quick complete, we just update the client/DataContext
+    if (recordingToComplete.id !== "temp") {
+      updateRecording(
+        recordingToComplete.id, 
+        {
+          status: "Concluído",
+          recordedVideos: formData.recordedVideos
+        },
+        isNoContent ? { status: "Normal" } : undefined
+      );
+    } else if (isNoContent) {
+      updateClientSettings(recordingToComplete.clientName, { status: "Normal" });
+    }
 
     // Update the "spreadsheet" (DataContext)
-    // Find the "Gravação Presencial" or "Reels" row for this client
     const clientRows = rows.filter(r => r.cliente === recordingToComplete.clientName);
     const targetRow = clientRows.find(r => 
       r.tipoConteudo.toLowerCase().includes("gravação") || 
@@ -805,24 +822,12 @@ const AgendaPage = () => {
                         </Button>
                       )}
 
-                      {!client.stats.isFinished && (
+                      {client.settings?.status === "Sem conteúdo" && (
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1 h-8 text-[10px] border-green-200 text-green-600"
-                          onClick={() => {
-                            const clientRows = rows.filter(r => r.cliente === client.cliente);
-                            const targetRow = clientRows.find(r => 
-                              r.tipoConteudo.toLowerCase().includes("gravação") || 
-                              r.tipoConteudo.toLowerCase().includes("reels")
-                            ) || clientRows[0];
-                            if (targetRow) {
-                              updateRow(targetRow.id, {
-                                statusEntrega: "Concluído",
-                                videosGravados: client.stats.contracted
-                              });
-                            }
-                          }}
+                          className="flex-1 h-8 text-[10px] border-green-200 text-green-600 bg-green-50"
+                          onClick={() => handleQuickComplete(client.cliente)}
                         >
                           <Check className="w-3 h-3 mr-1" /> Concluir
                         </Button>
@@ -941,26 +946,12 @@ const AgendaPage = () => {
                               </Button>
                             )}
 
-                            {!client.stats.isFinished && (
+                            {client.settings?.status === "Sem conteúdo" && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="h-8 text-[11px] gap-1 px-2 border-green-200 text-green-600 hover:bg-green-50"
-                                onClick={() => {
-                                  // Find the target row in DataContext to mark as finished
-                                  const clientRows = rows.filter(r => r.cliente === client.cliente);
-                                  const targetRow = clientRows.find(r => 
-                                    r.tipoConteudo.toLowerCase().includes("gravação") || 
-                                    r.tipoConteudo.toLowerCase().includes("reels")
-                                  ) || clientRows[0];
-
-                                  if (targetRow) {
-                                    updateRow(targetRow.id, {
-                                      statusEntrega: "Concluído",
-                                      videosGravados: client.stats.contracted // Set to contracted amount to mark as finished
-                                    });
-                                  }
-                                }}
+                                className="h-8 text-[11px] gap-1 px-2 border-green-200 text-green-600 hover:bg-green-50 bg-green-50/50"
+                                onClick={() => handleQuickComplete(client.cliente)}
                               >
                                 <Check className="w-3 h-3" />
                                 Concluir
