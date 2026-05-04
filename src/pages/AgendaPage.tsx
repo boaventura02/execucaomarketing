@@ -316,7 +316,26 @@ const AgendaPage = () => {
                         <SelectItem value="Cancelado">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  {!editingRecording && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">Frequência</Label>
+                      <Select 
+                        value={formData.frequency} 
+                        onValueChange={(v: RecordingFrequency | "Nenhuma") => setFormData({...formData, frequency: v})}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Nenhuma">Única vez</SelectItem>
+                          <SelectItem value="Semanal">Semanal</SelectItem>
+                          <SelectItem value="Quinzenal">Quinzenal</SelectItem>
+                          <SelectItem value="Mensal">Mensal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Prioridade</Label>
