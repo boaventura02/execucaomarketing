@@ -805,8 +805,11 @@ const AgendaPage = () => {
                         <td className="px-4 py-3">
                           {client.nextRecording ? (
                             <div className="flex flex-col">
-                              <span className="font-medium">{format(parseISO(client.nextRecording.date), "dd/MM/yyyy")}</span>
-                              <span className="text-[10px] text-muted-foreground">{client.nextRecording.topic}</span>
+                              <span className="font-medium flex items-center gap-1">
+                                {format(parseISO(client.nextRecording.date), "dd/MM/yyyy")}
+                                <Badge variant="outline" className="text-[9px] py-0 h-4">{client.nextRecording.time || "09:00"}</Badge>
+                              </span>
+                              <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{client.nextRecording.topic}</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground italic">Não agendado</span>
