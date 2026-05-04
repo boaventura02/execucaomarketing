@@ -36,7 +36,8 @@ const AgendaPage = () => {
     topic: "",
     status: "Agendado" as RecordingStatus,
     priority: "OK" as RecordingPriority,
-    scriptStatus: "Pendente"
+    scriptStatus: "Pendente",
+    frequency: "Nenhuma" as RecordingFrequency | "Nenhuma"
   });
 
 
@@ -49,24 +50,30 @@ const AgendaPage = () => {
       topic: "",
       status: "Agendado",
       priority: "OK",
-      scriptStatus: "Pendente"
+      scriptStatus: "Pendente",
+      frequency: "Nenhuma"
     });
     setEditingRecording(null);
   };
 
   const handleAddRecording = () => {
     if (!formData.clientName) return;
-    addRecording({
-      ...formData,
-      clientId: formData.clientName
-    });
+    const { frequency, ...recordingData } = formData;
+    addRecording(
+      {
+        ...recordingData,
+        clientId: formData.clientName
+      },
+      frequency === "Nenhuma" ? undefined : frequency
+    );
     setIsDialogOpen(false);
     resetForm();
   };
 
   const handleUpdateRecording = () => {
     if (!editingRecording) return;
-    updateRecording(editingRecording.id, formData);
+    const { frequency, ...recordingData } = formData;
+    updateRecording(editingRecording.id, recordingData);
     setIsDialogOpen(false);
     resetForm();
   };
@@ -81,7 +88,8 @@ const AgendaPage = () => {
       topic: recording.topic,
       status: recording.status,
       priority: recording.priority,
-      scriptStatus: recording.scriptStatus
+      scriptStatus: recording.scriptStatus,
+      frequency: "Nenhuma"
     });
     setIsDialogOpen(true);
   };
@@ -97,10 +105,18 @@ const AgendaPage = () => {
 
   const confirmCompletion = () => {
     if (!recordingToComplete) return;
-    updateRecording(recordingToComplete.id, {
-      status: "Concluído",
-      recordedVideos: formData.recordedVideos
-    });
+    
+    const settings = clientSettings[recordingToComplete.clientName];
+    const isNoContent = settings?.status === "Sem conteúdo";
+
+    updateRecording(
+      recordingToComplete.id, 
+      {
+        status: "Concluído",
+        recordedVideos: formData.recordedVideos
+      },
+      isNoContent ? { status: "Normal" } : undefined
+    );
 
     // Update the "spreadsheet" (DataContext)
     // Find the "Gravação Presencial" or "Reels" row for this client
@@ -300,7 +316,26 @@ const AgendaPage = () => {
                         <SelectItem value="Cancelado">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  {!editingRecording && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">Frequência</Label>
+                      <Select 
+                        value={formData.frequency} 
+                        onValueChange={(v: RecordingFrequency | "Nenhuma") => setFormData({...formData, frequency: v})}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Nenhuma">Única vez</SelectItem>
+                          <SelectItem value="Semanal">Semanal</SelectItem>
+                          <SelectItem value="Quinzenal">Quinzenal</SelectItem>
+                          <SelectItem value="Mensal">Mensal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Prioridade</Label>
@@ -375,7 +410,7 @@ const AgendaPage = () => {
             </h3>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          <div className="flex overflow-x-auto pb-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 snap-x">
             {eachDayOfInterval({
               start: startOfWeek(new Date(), { weekStartsOn: 0 }),
               end: endOfWeek(new Date(), { weekStartsOn: 0 })
@@ -384,7 +419,7 @@ const AgendaPage = () => {
               const isDayToday = isToday(day);
               
               return (
-                <div key={index} className="flex flex-col gap-3 min-w-[150px]">
+                <div key={index} className="flex flex-col gap-3 min-w-[200px] sm:min-w-[150px] snap-center">
                   <div className={`p-2 rounded-t-lg border-b-2 text-center ${isDayToday ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-muted"}`}>
                     <p className="text-[10px] uppercase font-bold tracking-wider leading-none">
                       {format(day, "EEEE", { locale: ptBR })}
@@ -607,19 +642,18 @@ const AgendaPage = () => {
                </Card>
             </div>
 
-            <Card className="border-sidebar-border shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-sidebar/50 text-muted-foreground font-medium border-b">
+            <Card className="border-sidebar-border shadow-sm overflow-hidden flex flex-col">
+              <div className="overflow-x-auto overflow-y-auto max-h-[600px] relative">
+                <table className="w-full text-sm text-left border-separate border-spacing-0">
+                  <thead className="bg-sidebar/95 backdrop-blur-sm text-muted-foreground font-medium border-b sticky top-0 z-10 shadow-sm">
                     <tr>
-                      <th className="px-4 py-3">Cliente</th>
-                      <th className="px-4 py-3">Próxima Gravação</th>
-                      <th className="px-4 py-3">Frequência</th>
-                      <th className="px-4 py-3 text-center">Contratado</th>
-                      <th className="px-4 py-3 text-center">Produzido</th>
-                      <th className="px-4 py-3 text-center">Saldo</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Ações</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Cliente</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Próxima Gravação</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Contratado</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Produzido</th>
+                      <th className="px-4 py-3 bg-inherit border-b text-center">Saldo</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Status</th>
+                      <th className="px-4 py-3 bg-inherit border-b">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -653,21 +687,6 @@ const AgendaPage = () => {
                           ) : (
                             <span className="text-muted-foreground italic">Não agendado</span>
                           )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Select 
-                            value={client.settings?.frequency || "Quinzenal"}
-                            onValueChange={(v: RecordingFrequency) => updateClientSettings(client.cliente, { frequency: v })}
-                          >
-                            <SelectTrigger className="h-7 w-32 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Semanal">Semanal</SelectItem>
-                              <SelectItem value="Quinzenal">Quinzenal</SelectItem>
-                              <SelectItem value="Mensal">Mensal</SelectItem>
-                            </SelectContent>
-                          </Select>
                         </td>
                         <td className="px-4 py-3 text-center font-medium">{client.stats.contracted}</td>
                         <td className="px-4 py-3 text-center">

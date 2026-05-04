@@ -29,8 +29,8 @@ export interface ClientRecordingSettings {
 interface RecordingContextType {
   recordings: Recording[];
   clientSettings: Record<string, ClientRecordingSettings>;
-  addRecording: (recording: Omit<Recording, "id">) => void;
-  updateRecording: (id: string, recording: Partial<Recording>) => void;
+  addRecording: (recording: Omit<Recording, "id">, recurring?: RecordingFrequency) => void;
+  updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
   deleteRecording: (id: string) => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
   getProductionStats: (clientName: string) => {
@@ -93,13 +93,45 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   }, [summaries]);
 
-  const addRecording = (recording: Omit<Recording, "id">) => {
-    const id = crypto.randomUUID();
-    setRecordings(prev => [...prev, { ...recording, id }]);
+  const addRecording = (recording: Omit<Recording, "id">, recurring?: RecordingFrequency) => {
+    const baseId = crypto.randomUUID();
+    const newRecordings: Recording[] = [{ ...recording, id: baseId }];
+
+    if (recurring) {
+      const baseDate = new Date(recording.date + "T12:00:00");
+      let occurrences = 0;
+      
+      // Add next 4 occurrences for weekly/quinzenal or next 2 for monthly
+      const maxOccurrences = recurring === "Mensal" ? 2 : 4;
+      
+      while (occurrences < maxOccurrences) {
+        occurrences++;
+        let nextDate = new Date(baseDate);
+        if (recurring === "Semanal") nextDate.setDate(baseDate.getDate() + (7 * occurrences));
+        else if (recurring === "Quinzenal") nextDate.setDate(baseDate.getDate() + (14 * occurrences));
+        else if (recurring === "Mensal") nextDate.setMonth(baseDate.getMonth() + occurrences);
+
+        newRecordings.push({
+          ...recording,
+          id: crypto.randomUUID(),
+          date: nextDate.toISOString().split("T")[0]
+        });
+      }
+    }
+
+    setRecordings(prev => [...prev, ...newRecordings]);
   };
 
-  const updateRecording = (id: string, updates: Partial<Recording>) => {
+  const updateRecording = (id: string, updates: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => {
     setRecordings(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+    
+    // Auto-update client settings if provided
+    if (clientSettingsUpdates) {
+      const recording = recordings.find(r => r.id === id);
+      if (recording) {
+        updateClientSettings(recording.clientName, clientSettingsUpdates);
+      }
+    }
   };
 
   const deleteRecording = (id: string) => {
