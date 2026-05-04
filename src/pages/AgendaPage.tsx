@@ -766,7 +766,68 @@ const AgendaPage = () => {
                </Card>
             </div>
 
-            <Card className="border-sidebar-border shadow-sm overflow-hidden flex flex-col">
+            {/* Mobile List View */}
+            <div className="md:hidden space-y-4">
+              {sortedClients.map(client => (
+                <Card key={client.cliente} className={`overflow-hidden ${client.settings?.status === "Sem conteúdo" ? "border-red-200 bg-red-50/30" : ""}`}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-bold flex items-center gap-2">
+                          {client.cliente}
+                          {client.settings?.status === "Sem conteúdo" && <AlertCircle className="w-4 h-4 text-red-500 animate-pulse" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Responsável: {client.responsavel}</p>
+                      </div>
+                      <Badge variant={client.stats.isFinished ? "default" : "outline"} className={client.stats.isFinished ? "bg-green-100 text-green-700" : ""}>
+                        {client.stats.recorded}/{client.stats.contracted}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-muted/50 p-2 rounded">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Próxima</p>
+                        {client.nextRecording ? (
+                          <div className="font-medium">
+                            {format(parseISO(client.nextRecording.date), "dd/MM")} às {client.nextRecording.time || "09:00"}
+                          </div>
+                        ) : <span className="text-muted-foreground italic">Não agendado</span>}
+                      </div>
+                      <div className="bg-muted/50 p-2 rounded">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Saldo</p>
+                        <span className={`font-bold ${client.stats.remaining > 0 ? "text-orange-600" : "text-green-600"}`}>
+                          {client.stats.remaining} vídeos
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 h-8 text-[10px]"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, clientName: client.cliente }));
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Agendar
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={`flex-1 h-8 text-[10px] ${client.settings?.status === "Sem conteúdo" ? "text-red-600" : ""}`}
+                        onClick={() => updateClientSettings(client.cliente, { status: client.settings?.status === "Sem conteúdo" ? "Normal" : "Sem conteúdo" })}
+                      >
+                        {client.settings?.status === "Sem conteúdo" ? "Normalizar" : "Sem Conteúdo"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="hidden md:flex border-sidebar-border shadow-sm overflow-hidden flex-col">
               <div className="overflow-x-auto overflow-y-auto max-h-[600px] relative">
                 <table className="w-full text-sm text-left border-separate border-spacing-0">
                   <thead className="bg-sidebar/95 backdrop-blur-sm text-muted-foreground font-medium border-b sticky top-0 z-10 shadow-sm">
