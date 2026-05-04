@@ -36,7 +36,8 @@ const AgendaPage = () => {
     topic: "",
     status: "Agendado" as RecordingStatus,
     priority: "OK" as RecordingPriority,
-    scriptStatus: "Pendente"
+    scriptStatus: "Pendente",
+    frequency: "Nenhuma" as RecordingFrequency | "Nenhuma"
   });
 
 
