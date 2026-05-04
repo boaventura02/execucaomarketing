@@ -108,9 +108,9 @@ const AgendaPage = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = (deleteAll: boolean) => {
+  const confirmDelete = (deleteType: "single" | "client") => {
     if (recordingToDelete) {
-      deleteRecording(recordingToDelete.id, deleteAll);
+      deleteRecording(recordingToDelete.id, deleteType);
       setIsDeleteDialogOpen(false);
       setRecordingToDelete(null);
     }
@@ -312,16 +312,6 @@ const AgendaPage = () => {
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Data</Label>
-                    <Input 
-                      type="date" 
-                      className="col-span-3" 
-                      value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Data e Hora</Label>
                     <div className="col-span-3 flex gap-2">
                       <Input 
@@ -349,18 +339,6 @@ const AgendaPage = () => {
                       onChange={(e) => setFormData({...formData, plannedVideos: parseInt(e.target.value) || 0})}
                     />
                   </div>
-
-                  {formData.status === "Concluído" && (
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label className="text-right">Vídeos Gravados</Label>
-                      <Input 
-                        type="number" 
-                        className="col-span-3" 
-                        value={formData.recordedVideos}
-                        onChange={(e) => setFormData({...formData, recordedVideos: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
-                  )}
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Tema</Label>
@@ -410,23 +388,6 @@ const AgendaPage = () => {
                       </Select>
                     </div>
                   )}
-
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Prioridade</Label>
-                    <Select 
-                      value={formData.priority} 
-                      onValueChange={(v: RecordingPriority) => setFormData({...formData, priority: v})}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OK">🟢 OK</SelectItem>
-                        <SelectItem value="Atenção">🟡 Atenção</SelectItem>
-                        <SelectItem value="Urgente">🔴 Urgente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
@@ -490,14 +451,12 @@ const AgendaPage = () => {
                   )}
                 </div>
                 <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="sm:mr-auto">Cancelar</Button>
-                  {recordingToDelete?.groupId && (
-                    <Button variant="destructive" onClick={() => confirmDelete(true)}>
-                      Excluir Todos
-                    </Button>
-                  )}
-                  <Button variant="destructive" onClick={() => confirmDelete(false)}>
-                    Excluir Apenas Este
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="sm:flex-1">Cancelar</Button>
+                  <Button variant="secondary" onClick={() => confirmDelete("single")} className="sm:flex-1">
+                    Excluir apenas este
+                  </Button>
+                  <Button variant="destructive" onClick={() => confirmDelete("client")} className="sm:flex-1">
+                    Excluir todos do cliente
                   </Button>
                 </DialogFooter>
               </DialogContent>

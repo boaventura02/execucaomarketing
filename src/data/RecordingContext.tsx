@@ -33,7 +33,7 @@ interface RecordingContextType {
   clientSettings: Record<string, ClientRecordingSettings>;
   addRecording: (recording: Omit<Recording, "id" | "groupId">, recurring?: RecordingFrequency) => void;
   updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
-  deleteRecording: (id: string, deleteAllFromGroup?: boolean) => void;
+  deleteRecording: (id: string, deleteAllType?: "single" | "group" | "client") => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
   getProductionStats: (clientName: string) => {
     contracted: number;
@@ -137,14 +137,20 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const deleteRecording = (id: string, deleteAllFromGroup: boolean = false) => {
-    if (deleteAllFromGroup) {
-      const recording = recordings.find(r => r.id === id);
-      if (recording?.groupId) {
-        setRecordings(prev => prev.filter(r => r.groupId !== recording.groupId));
-        return;
-      }
+  const deleteRecording = (id: string, deleteType: "single" | "group" | "client" = "single") => {
+    const recording = recordings.find(r => r.id === id);
+    if (!recording) return;
+
+    if (deleteType === "client") {
+      setRecordings(prev => prev.filter(r => r.clientName !== recording.clientName));
+      return;
     }
+
+    if (deleteType === "group" && recording.groupId) {
+      setRecordings(prev => prev.filter(r => r.groupId !== recording.groupId));
+      return;
+    }
+
     setRecordings(prev => prev.filter(r => r.id !== id));
   };
 
