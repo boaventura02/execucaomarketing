@@ -183,6 +183,14 @@ const AgendaPage = () => {
   const sortedClients = useMemo(() => {
     return summaries
       .filter(s => !s.congelado) // Only active clients
+      .filter(client => {
+        if (!searchTerm) return true;
+        const search = searchTerm.toLowerCase();
+        return (
+          client.cliente.toLowerCase().includes(search) ||
+          client.responsavel.toLowerCase().includes(search)
+        );
+      })
       .map(client => {
         const stats = getProductionStats(client.cliente);
         const settings = clientSettings[client.cliente];
@@ -205,7 +213,7 @@ const AgendaPage = () => {
         };
       })
       .sort((a, b) => b.priorityScore - a.priorityScore);
-  }, [summaries, recordings, clientSettings, getProductionStats]);
+  }, [summaries, recordings, clientSettings, getProductionStats, searchTerm]);
 
   return (
     <AppLayout>
