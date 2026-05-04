@@ -35,10 +35,13 @@ interface RecordingContextType {
   updateRecording: (id: string, recording: Partial<Recording>, clientSettingsUpdates?: Partial<ClientRecordingSettings>) => void;
   deleteRecording: (id: string, deleteAllType?: "single" | "group" | "client") => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
+  updateManualVideos: (clientName: string, month: Date, count: number) => void;
   resetMonthlyData: () => void;
   getProductionStats: (clientName: string, targetMonth?: Date) => {
     contracted: number;
     recorded: number;
+    manualRecorded: number;
+    totalRecorded: number;
     remaining: number;
     excess: number;
     isFinished: boolean;
@@ -56,8 +59,14 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [clientSettings, setClientSettings] = useState<Record<string, ClientRecordingSettings>>(() => {
     const saved = localStorage.getItem("client_recording_settings");
+  const [manualVideos, setManualVideos] = useState<Record<string, Record<string, number>>>(() => {
+    const saved = localStorage.getItem("manual_recorded_videos");
     return saved ? JSON.parse(saved) : {};
   });
+
+  useEffect(() => {
+    localStorage.setItem("manual_recorded_videos", JSON.stringify(manualVideos));
+  }, [manualVideos]);
 
   useEffect(() => {
     localStorage.setItem("recording_data", JSON.stringify(recordings));
@@ -170,6 +179,17 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setClientSettings(prev => ({
       ...prev,
       [clientName]: { ...prev[clientName], ...updates }
+    }));
+  };
+
+  const updateManualVideos = (clientName: string, month: Date, count: number) => {
+    const monthKey = `${month.getFullYear()}-${month.getMonth()}`;
+    setManualVideos(prev => ({
+      ...prev,
+      [clientName]: {
+        ...(prev[clientName] || {}),
+        [monthKey]: count
+      }
     }));
   };
 
