@@ -36,7 +36,7 @@ interface RecordingContextType {
   deleteRecording: (id: string, deleteAllType?: "single" | "group" | "client") => void;
   updateClientSettings: (clientName: string, settings: Partial<ClientRecordingSettings>) => void;
   resetMonthlyData: () => void;
-  getProductionStats: (clientName: string) => {
+  getProductionStats: (clientName: string, targetMonth?: Date) => {
     contracted: number;
     recorded: number;
     remaining: number;

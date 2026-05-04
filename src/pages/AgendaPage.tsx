@@ -127,7 +127,7 @@ const AgendaPage = () => {
 
   const handleQuickComplete = (clientName: string) => {
     // Create a temporary "recording" to use the existing dialog
-    const stats = getProductionStats(clientName);
+    const stats = getProductionStats(clientName, currentMonth);
     const tempRecording: any = {
       id: "temp",
       clientName: clientName,
