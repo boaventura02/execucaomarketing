@@ -451,14 +451,12 @@ const AgendaPage = () => {
                   )}
                 </div>
                 <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="sm:mr-auto">Cancelar</Button>
-                  {recordingToDelete?.groupId && (
-                    <Button variant="destructive" onClick={() => confirmDelete(true)}>
-                      Excluir Todos
-                    </Button>
-                  )}
-                  <Button variant="destructive" onClick={() => confirmDelete(false)}>
-                    Excluir Apenas Este
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="sm:flex-1">Cancelar</Button>
+                  <Button variant="secondary" onClick={() => confirmDelete("single")} className="sm:flex-1">
+                    Excluir apenas este
+                  </Button>
+                  <Button variant="destructive" onClick={() => confirmDelete("client")} className="sm:flex-1">
+                    Excluir todos do cliente
                   </Button>
                 </DialogFooter>
               </DialogContent>
