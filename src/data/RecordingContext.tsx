@@ -192,17 +192,17 @@ export const RecordingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
-  const getProductionStats = (clientName: string) => {
+  const getProductionStats = (clientName: string, targetMonth?: Date) => {
     const settings = clientSettings[clientName];
     const contracted = settings?.reelsContracted || 0;
     
-    // Get all completed recordings for this client in the current month
-    const now = new Date();
+    // Get all completed recordings for this client in the specified month
+    const now = targetMonth || new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     
     const monthlyRecordings = recordings.filter(r => {
-      const d = new Date(r.date);
+      const d = new Date(r.date + "T12:00:00");
       return r.clientName === clientName && 
              r.status === "Concluído" && 
              d.getMonth() === currentMonth && 
